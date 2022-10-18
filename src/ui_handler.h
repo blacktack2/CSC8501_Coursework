@@ -27,9 +27,8 @@ private:
 	void performAction(std::string action);
 
 	void uiCreatePolynomial();
-	void uiHandlePolynomial();
 
-	typedef void(UIHandler::*user_action_t)();
+	typedef std::function<void()> user_action_t;
 	struct ActionData {
 		std::string actionIdentifier;
 		user_action_t action;
@@ -47,14 +46,17 @@ private:
 	const ActionSet ROOT_ACTIONS = {
 		[this]() { printPolynomial(); } ,
 		{
-			{"create", &UIHandler::uiCreatePolynomial, "Create a sequence from an algebraic expression"},
-			{"quit"  , &UIHandler::stopLoop, "Exit program"},
+			{"poly", [this]() { UIHandler::uiCreatePolynomial(); }, "Create a new polynomial from an algebraic expression"},
+			{"seq" , [this]() {}, "Create a new polynomial from a sequence of values"},
+			{"op"  , [this]() { mActionStack.push(HANDLE_POLYNOMIAL_ACTIONS); }, "Operate on the currently loaded polynomial"},
+			{"clear", [this]() { mCurrentPolynomial.clear(); }, "Clear the currently loaded polynomial"},
+			{"quit", [this]() { UIHandler::stopLoop(); }, ""},
 		}
 	};
 	const ActionSet HANDLE_POLYNOMIAL_ACTIONS = {
 		[this]() {},
 		{
-			{"back", &UIHandler::softPopActionStack, ""}
+			{"back", [this]() { UIHandler::softPopActionStack(); } , ""}
 		}
 	};
 

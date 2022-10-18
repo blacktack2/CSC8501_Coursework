@@ -8,15 +8,18 @@ namespace Algebra {
 	void Polynomial::clear() {
 		std::fill_n(mCoefficients, Limits::MAX_EXPONENT + 1, 0);
 		mCurrentErrorState = Regex::Error::NoError;
+		mIsLoaded = false;
 	}
 
 	void Polynomial::parseFrom(std::string expression) {
+		mIsLoaded = false;
 		if (!isExpressionValid(expression)) {
 			mCurrentErrorState = findExpressionError(expression);
 			return;
 		}
 		calculateCoefficients(expression, mCoefficients);
 		mCurrentErrorState = Regex::Error::NoError;
+		mIsLoaded = true;
 	}
 
 	std::string Polynomial::toString() {

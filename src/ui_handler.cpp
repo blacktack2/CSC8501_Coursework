@@ -50,15 +50,19 @@ void UIHandler::softPopActionStack() {
 void UIHandler::handlePrompt() {
 	ActionSet currentSet = mActionStack.top();
 	currentSet.actionPrefixPrompt();
-	for (const auto& action : currentSet.actionMap)
-		std::cout << action.actionIdentifier << HELP_MESSAGE_SEPARATOR << action.actionHelpPrompt << "\n";
+	for (const auto& action : currentSet.actionMap) {
+		std::cout << action.actionIdentifier;
+		if (action.actionHelpPrompt != "")
+			std::cout << HELP_MESSAGE_SEPARATOR << action.actionHelpPrompt;
+		std::cout << "\n";
+	}
 }
 
 void UIHandler::performAction(std::string action) {
 	action_map_t actionMap = mActionStack.top().actionMap;
 	for (ActionData actionData : actionMap) {
 		if (actionData.actionIdentifier == action) {
-			((*this).*(actionData.action))();
+			actionData.action();
 			return;
 		}
 	}
@@ -76,9 +80,6 @@ void UIHandler::uiCreatePolynomial() {
 		if (mCurrentPolynomial.getErrorState() == Algebra::Regex::Error::State::NoError)
 			break;
 		else
-			std::cout << Algebra::Regex::Error::ERROR_MESSAGES.find(mCurrentPolynomial.getErrorState())->second << "\n";
+			std::cout << "[Error] " << Algebra::Regex::Error::ERROR_MESSAGES.find(mCurrentPolynomial.getErrorState())->second << "\n";
 	}
-}
-
-void UIHandler::uiHandlePolynomial() {
 }
