@@ -33,7 +33,7 @@ std::string UIHandler::requestUserInput() {
 }
 
 void UIHandler::printPolynomial() {
-	if (mCurrentPolynomial.getState() == Algebra::Polynomial::ParseSuccessful)
+	if (mCurrentPolynomial.isLoaded())
 		std::cout << "Currently loaded polynomial:\n" << mCurrentPolynomial.toString() << "\n";
 	else
 		std::cout << "No polynomial loaded...\n";
@@ -73,10 +73,10 @@ void UIHandler::uiCreatePolynomial() {
 		if (expression == "b")
 			break;
 		mCurrentPolynomial.parseFrom(expression);
-		if (mCurrentPolynomial.getState() == Algebra::Polynomial::State::ParseSuccessful)
+		if (mCurrentPolynomial.getErrorState() == Algebra::Regex::Error::State::NoError)
 			break;
 		else
-			std::cout << "Invalid polynomial!\n";
+			std::cout << Algebra::Regex::Error::ERROR_MESSAGES.find(mCurrentPolynomial.getErrorState())->second << "\n";
 	}
 }
 

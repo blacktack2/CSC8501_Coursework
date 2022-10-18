@@ -1,22 +1,22 @@
 #include "polynomial.h"
 
 namespace Algebra {
-	Polynomial::Polynomial() : mCurrentState(NotParsed), mCoefficients() {
+	Polynomial::Polynomial() : mCoefficients() {
 		clear();
 	}
 
 	void Polynomial::clear() {
 		std::fill_n(mCoefficients, Limits::MAX_EXPONENT + 1, 0);
-		mCurrentState = NotParsed;
+		mCurrentErrorState = Regex::Error::NoError;
 	}
 
 	void Polynomial::parseFrom(std::string expression) {
 		if (!isExpressionValid(expression)) {
-			mCurrentState = findExpressionError(expression);
+			mCurrentErrorState = findExpressionError(expression);
 			return;
 		}
 		calculateCoefficients(expression, mCoefficients);
-		mCurrentState = ParseSuccessful;
+		mCurrentErrorState = Regex::Error::NoError;
 	}
 
 	std::string Polynomial::toString() {
@@ -33,28 +33,33 @@ namespace Algebra {
 		return expression;
 	}
 
-	Polynomial::State Polynomial::getState() {
-		return mCurrentState;
+	Regex::Error::State Polynomial::getErrorState() {
+		return mCurrentErrorState;
+	}
+
+	bool Polynomial::isLoaded() {
+		return mIsLoaded;
 	}
 
 	bool Polynomial::isExpressionValid(std::string expression) {
-		if (!std::regex_match(expression, Regex::Validate::POLYNOMIAL)) {
+		if (!std::regex_match(expression, Regex::Validate::POLYNOMIAL))
 			return false;
-		}
 		return !doCoefficientsExeedMax(expression);
 	}
 
 	bool Polynomial::doCoefficientsExeedMax(std::string expression) {
 		int coeffs[Limits::MAX_EXPONENT + 1]{};
 		calculateCoefficients(expression, coeffs);
-		for (auto& c : coeffs) {
+		for (const auto& c : coeffs)
 			if (c > Limits::MAX_COEFFICIENT || c < -Limits::MAX_COEFFICIENT) return true;
-		}
 		return false;
 	}
 
-	Polynomial::State Polynomial::findExpressionError(std::string expression) {
-		return UnknownError;
+	Regex::Error::State Polynomial::findExpressionError(std::string expression) {
+		for (const auto& errorCheck : Regex::Error::ERROR_CHECKS)
+			if (errorCheck.doCheck(expression))
+				return errorCheck.state;
+		return Regex::Error::UnknownError;
 	}
 
 	void Polynomial::calculateCoefficients(std::string expression, int(&coeffs)[Limits::MAX_EXPONENT + 1]) {

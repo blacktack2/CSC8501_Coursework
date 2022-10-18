@@ -1,7 +1,9 @@
 #pragma once
 
-#include <string>
+#include <functional>
+#include <map>
 #include <regex>
+#include <string>
 
 namespace Algebra {
 	namespace Regex {
@@ -16,7 +18,30 @@ namespace Algebra {
 			const int COMPONENT_MATCH_CONSTANT    = 3;
 		}
 		namespace Error {
-			const std::regex UNKNOWN_SYMBOL("");
+			const std::regex UNKNOWN_SYMBOL("[^x1-9\^+-]");
+
+			enum State {
+				NoError,
+				UnknownSymbol,
+				UnknownError
+			};
+			const std::map<State, std::string> ERROR_MESSAGES = {
+				{NoError, ""},
+				{UnknownSymbol, "Unknown Symbol - One or more characters not recognized"},
+				{UnknownError, "Unknown Error"}
+			};
+
+			typedef std::function<bool(std::string)> error_check_t;
+			struct ErrorCheck {
+				State state;
+				error_check_t doCheck;
+			};
+			const std::vector<ErrorCheck> ERROR_CHECKS = {
+				{
+					UnknownSymbol,
+					[](std::string expression) { return std::regex_match(expression, UNKNOWN_SYMBOL); }
+				}
+			};
 		}
 	}
 
@@ -28,26 +53,23 @@ namespace Algebra {
 
 	class Polynomial {
 	public:
-		enum State {
-			NotParsed,
-			ParseSuccessful,
-			UnknownError
-		};
 		Polynomial();
 
 		void clear();
 		void parseFrom(std::string expression);
 		std::string toString();
 
-		State getState();
+		Regex::Error::State getErrorState();
+		bool isLoaded();
 	private:
 		bool isExpressionValid(std::string expression);
 		bool doCoefficientsExeedMax(std::string expression);
-		State findExpressionError(std::string expression);
+		Regex::Error::State findExpressionError(std::string expression);
 
 		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]);
 
-		State mCurrentState;
+		Regex::Error::State mCurrentErrorState = Regex::Error::NoError;
 		int mCoefficients[Limits::MAX_EXPONENT + 1];
+		bool mIsLoaded = false;
 	};
 }
