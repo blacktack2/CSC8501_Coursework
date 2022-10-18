@@ -13,6 +13,7 @@ namespace Algebra {
 	void Polynomial::parseFrom(std::string expression) {
 		if (!isExpressionValid(expression)) {
 			mCurrentState = findExpressionError(expression);
+			return;
 		}
 		calculateCoefficients(expression, mCoefficients);
 		mCurrentState = ParseSuccessful;

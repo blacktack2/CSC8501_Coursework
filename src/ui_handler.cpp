@@ -2,19 +2,15 @@
 
 #include <iostream>
 
-UIHandler::UIHandler() : mIsRunning(false) {
-
+UIHandler::UIHandler() : mIsRunning(false), mCurrentPolynomial(), mActionStack() {
+	mActionStack.push(ROOT_ACTIONS);
 }
 
 void UIHandler::mainloop() {
 	mIsRunning = true;
 	while (mIsRunning) {
-		std::cout << "What would you like to do?\nquit -- Exit program\ncreate -- Create a sequence from an algebraic expression\n";
-		std::string action = requestUserInput();
-		if (USER_ACTIONS.count(action))
-			((*this).*(USER_ACTIONS.find(action)->second))();
-		else
-			std::cout << "Unrecognized command: [" << action << "]\n";
+		handlePrompt();
+		performAction(requestUserInput());
 	}
 	hangUntilEnterPressed(true);
 }
@@ -36,15 +32,53 @@ std::string UIHandler::requestUserInput() {
 	return action;
 }
 
-void UIHandler::userCreatePolynomial() {
-	std::cout << "Type in your expression in the format: Ax^4 + Bx^3 + Cx^2 + Dx + E\n";
-	std::string expression = requestUserInput();
-	Algebra::Polynomial polynomial;
-	polynomial.parseFrom(expression);
-	if (polynomial.getState() == Algebra::Polynomial::State::ParseSuccessful) {
-		std::cout << "Your expression is: " << polynomial.toString() << "\n";
-		hangUntilEnterPressed(false);
-	} else {
-		std::cout << "Invalid polynomial!\n";
+void UIHandler::printPolynomial() {
+	if (mCurrentPolynomial.getState() == Algebra::Polynomial::ParseSuccessful)
+		std::cout << "Currently loaded polynomial:\n" << mCurrentPolynomial.toString() << "\n";
+	else
+		std::cout << "No polynomial loaded...\n";
+}
+
+void UIHandler::softPopActionStack() {
+	if (mActionStack.size() <= 1)
+		std::cout << "[Warning] Attempted to empty stack!\n";
+	else
+		mActionStack.pop();
+	auto x = [this]() {};
+}
+
+void UIHandler::handlePrompt() {
+	ActionSet currentSet = mActionStack.top();
+	currentSet.actionPrefixPrompt();
+	for (const auto& action : currentSet.actionMap)
+		std::cout << action.actionIdentifier << HELP_MESSAGE_SEPARATOR << action.actionHelpPrompt << "\n";
+}
+
+void UIHandler::performAction(std::string action) {
+	action_map_t actionMap = mActionStack.top().actionMap;
+	for (ActionData actionData : actionMap) {
+		if (actionData.actionIdentifier == action) {
+			((*this).*(actionData.action))();
+			return;
+		}
 	}
+	std::cout << "Unrecognized command: [" << action << "]\n";
+}
+
+void UIHandler::uiCreatePolynomial() {
+	while (true) {
+		mCurrentPolynomial.clear();
+		std::cout << "Type in your expression in the format:\nAx^4 + Bx^3 + Cx^2 + Dx + E\n(Type b to go back)\n";
+		std::string expression = requestUserInput();
+		if (expression == "b")
+			break;
+		mCurrentPolynomial.parseFrom(expression);
+		if (mCurrentPolynomial.getState() == Algebra::Polynomial::State::ParseSuccessful)
+			break;
+		else
+			std::cout << "Invalid polynomial!\n";
+	}
+}
+
+void UIHandler::uiHandlePolynomial() {
 }
