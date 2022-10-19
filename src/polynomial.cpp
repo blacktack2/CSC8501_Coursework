@@ -1,5 +1,7 @@
 #include "polynomial.h"
-#include "sstream"
+
+#include <numeric>
+#include <sstream>
 
 namespace Algebra {
 	std::string setToString(const set_t set) {
@@ -32,17 +34,16 @@ namespace Algebra {
 	}
 
 	std::string Polynomial::toString() const {
-		std::vector<std::pair<std::string, bool>> components;
-		for (int exponent = Limits::MAX_EXPONENT; exponent >= 0; exponent--) {
-			const int coefficient = std::abs(mCoefficients[exponent]);
-			const bool isNegative = mCoefficients[exponent] < 0;
-			if (coefficient != 0)
-				components.emplace_back(((coefficient == 1) ? "" : std::to_string(coefficient)) + ((exponent == 0) ? "" : (std::string("x") + ((exponent == 1) ? "" : ("^" + std::to_string(exponent))))), isNegative);
-		}
-		std::string expression{};
-		for (const auto& component : components)
-			expression += (component.second ? "-" : (&component == &components.front()) ? "" : "+") + component.first;
-		return expression;
+		int exp = Limits::MAX_EXPONENT + 1;
+		return std::accumulate(std::rbegin(mCoefficients), std::rend(mCoefficients), std::string(),
+			[&exp](const std::string l, const int coeff) {
+				exp--;
+				return (coeff == 0) ? l : (l +
+					((l == "") ? ((coeff < 0) ? "-" : "") : ((coeff < 0) ? " - " : " + ")) +
+					((std::abs(coeff) == 1 && exp != 0) ? "" : std::to_string(std::abs(coeff))) +
+					((exp == 0) ? "" : ("x" + ((exp == 1) ? "" : ("^" + std::to_string(exp))))));
+			}
+		);
 	}
 
 	Regex::Error::State Polynomial::getErrorState() const {

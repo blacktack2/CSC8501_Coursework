@@ -2,6 +2,7 @@
 
 #include <functional>
 #include <iostream>
+#include <numeric>
 #include <optional>
 #include <stack>
 #include <string>
@@ -9,6 +10,7 @@
 
 #include "file_handle.h"
 #include "polynomial.h"
+#include "utils.h"
 
 const std::string USER_INPUT_PROMPT = ">> ";
 const std::string HELP_MESSAGE_SEPARATOR = " -- ";
@@ -33,10 +35,17 @@ private:
 	void printFilenames(std::vector<std::string> filenames) const;
 
 	typedef std::function<void()> user_action_t;
-	struct ActionData {
-		std::string actionIdentifier;
+	class ActionData {
+	public:
+		ActionData(std::string identifier, user_action_t action_, std::string helpPrompt);
+
+		std::string getIdentifier() const;
+		std::string getPrompt() const;
+
 		user_action_t action;
-		std::string actionHelpPrompt;
+	private:
+		std::string mIdentifier;
+		std::string mHelpPrompt;
 	};
 	typedef std::vector<ActionData> action_map_t;
 	// @return Prompt to be displayed before the list of actions
@@ -83,10 +92,8 @@ private:
 					std::cout << "[Error] " << mFileHandler.getError() << "\n";
 					return;
 				}
-				std::cout << "Polynomials: ";
-				printFilenames(polynomials);
-				std::cout << "Sequences: ";
-				printFilenames(sequences);
+				std::cout << "Polynomials: <" << Utils::join(polynomials) << ">\n";
+				std::cout << "Sequences: <" << Utils::join(sequences) << ">\n";
 			}, "List all available polynomial and sequence files"},
 			{"save", [this]() { mMenuStack.push({SAVE_MENU}); }, "Save current polynomial/sequence to a file"},
 			{"load", [this]() { mMenuStack.push({LOAD_MENU}); }, "Load polynomial/sequence from a file"},

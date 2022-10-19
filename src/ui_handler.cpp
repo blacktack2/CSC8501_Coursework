@@ -2,6 +2,17 @@
 
 #include <regex>
 
+UIHandler::ActionData::ActionData(std::string identifier, user_action_t action_, std::string helpPrompt) :
+mIdentifier(identifier), action(action_), mHelpPrompt(helpPrompt) {}
+
+std::string UIHandler::ActionData::getIdentifier() const {
+	return mIdentifier;
+}
+
+std::string UIHandler::ActionData::getPrompt() const {
+	return "{" + mIdentifier + "}" + (mHelpPrompt == "" ? "" : HELP_MESSAGE_SEPARATOR + mHelpPrompt);
+}
+
 UIHandler::UIHandler() :
 mMenuStack(), mCurrentPolynomial(), mCurrentSequence(), mFileHandler() {
 	mMenuStack.push({ROOT_MENU});
@@ -54,20 +65,16 @@ void UIHandler::handlePrompt() {
 		std::cout << menuData.content.actionPrefixPrompt();
 		menuData.justEntered = false;
 	}
-	for (const auto& action : menuData.content.actionMap) {
-		std::cout << "{" << action.actionIdentifier << "}";
-		if (action.actionHelpPrompt != "")
-			std::cout << HELP_MESSAGE_SEPARATOR << action.actionHelpPrompt;
-		std::cout << "\n";
-	}
+	for (const auto& action : menuData.content.actionMap)
+		std::cout << action.getPrompt() << "\n";
 	if (!menuData.content.dataActions.empty())
 		std::cout << menuData.content.dataActions[menuData.currentDataAction].dataActionPrefixPrompt();
 }
 
 void UIHandler::parseInput(std::string input) {
 	MenuStackData menuData = mMenuStack.top();
-	for (ActionData actionData : menuData.content.actionMap) {
-		if (actionData.actionIdentifier == input) {
+	for (const auto& actionData : menuData.content.actionMap) {
+		if (actionData.getIdentifier() == input) {
 			actionData.action();
 			return;
 		}
