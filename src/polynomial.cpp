@@ -44,6 +44,16 @@ namespace Algebra {
 		return mIsLoaded;
 	}
 
+	std::vector<int> Polynomial::apply(std::vector<int> range) {
+		for (auto& y : range) {
+			int x = y;
+			y = 0;
+			for (int exp = 0; exp <= Limits::MAX_EXPONENT; exp++)
+				y += mCoefficients[exp] * std::pow(x, exp);
+		}
+		return range;
+	}
+
 	bool Polynomial::isExpressionValid(std::string expression) {
 		if (!std::regex_match(expression, Regex::Validate::POLYNOMIAL))
 			return false;

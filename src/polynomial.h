@@ -18,7 +18,7 @@ namespace Algebra {
 			const int COMPONENT_MATCH_CONSTANT    = 3;
 		}
 		namespace Error {
-			const std::regex UNKNOWN_SYMBOL("[^x1-9\^+-]");
+			const std::regex UNKNOWN_SYMBOL("[^x1-9\\^+-]");
 
 			enum State {
 				NoError,
@@ -61,6 +61,8 @@ namespace Algebra {
 
 		Regex::Error::State getErrorState();
 		bool isLoaded();
+
+		std::vector<int> apply(std::vector<int> range);
 	private:
 		bool isExpressionValid(std::string expression);
 		bool doCoefficientsExeedMax(std::string expression);
