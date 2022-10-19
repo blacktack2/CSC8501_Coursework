@@ -30,6 +30,8 @@ private:
 	void parseInput(std::string input);
 	void parseDataInput(std::string data);
 
+	void printFilenames(std::vector<std::string> filenames) const;
+
 	typedef std::function<void()> user_action_t;
 	struct ActionData {
 		std::string actionIdentifier;
@@ -74,6 +76,14 @@ private:
 				else
 					mMenuStack.push({GENERATE_MENU});
 			}, "Generate polynomial from the currently loaded sequence"},
+			{"list", [this]() {
+				std::vector<std::string> polynomials = mFileHandler.getExpressionFiles();
+				std::vector<std::string> sequences   = mFileHandler.getSequenceFiles();
+				std::cout << "Polynomials: ";
+				printFilenames(polynomials);
+				std::cout << "Sequences: ";
+				printFilenames(sequences);
+			}, "List all available polynomial and sequence files"},
 			{"save", [this]() { mMenuStack.push({SAVE_MENU}); }, "Save current polynomial/sequence to a file"},
 			{"load", [this]() { mMenuStack.push({LOAD_MENU}); }, "Load polynomial/sequence from a file"},
 			{"quit", [this]() { stopLoop(); }, ""},

@@ -63,14 +63,14 @@ namespace Algebra {
 		void parseFrom(std::string expression);
 		std::string toString() const;
 
-		Regex::Error::State getErrorState();
-		bool isLoaded();
+		Regex::Error::State getErrorState() const;
+		bool isLoaded() const;
 
-		set_t apply(set_t range);
+		set_t apply(set_t range) const;
 	private:
 		bool isExpressionValid(std::string expression);
 		bool doCoefficientsExeedMax(std::string expression);
-		Regex::Error::State findExpressionError(std::string expression);
+		Regex::Error::State findExpressionError(std::string expression) const;
 
 		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]);
 

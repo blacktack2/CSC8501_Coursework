@@ -87,3 +87,15 @@ void UIHandler::parseDataInput(std::string input) {
 	if (menuData.currentDataAction >= menuData.content.dataActions.size())
 		softPopMenu();
 }
+
+void UIHandler::printFilenames(std::vector<std::string> filenames) const {
+	if (filenames.empty()) {
+		std::cout << "Empty\n";
+	} else {
+		std::cout << "< ";
+		for (std::vector<std::string>::iterator i = filenames.begin(); i != filenames.end() - 1; i++)
+			std::cout << *i << " | ";
+		std::cout << filenames.back();
+		std::cout << " >\n";
+	}
+}

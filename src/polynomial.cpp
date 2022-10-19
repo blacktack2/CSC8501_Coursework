@@ -45,15 +45,15 @@ namespace Algebra {
 		return expression;
 	}
 
-	Regex::Error::State Polynomial::getErrorState() {
+	Regex::Error::State Polynomial::getErrorState() const {
 		return mCurrentErrorState;
 	}
 
-	bool Polynomial::isLoaded() {
+	bool Polynomial::isLoaded() const {
 		return mIsLoaded;
 	}
 
-	Algebra::set_t Polynomial::apply(Algebra::set_t range) {
+	Algebra::set_t Polynomial::apply(Algebra::set_t range) const {
 		for (auto& y : range) {
 			int x = y;
 			y = 0;
@@ -77,7 +77,7 @@ namespace Algebra {
 		return false;
 	}
 
-	Regex::Error::State Polynomial::findExpressionError(std::string expression) {
+	Regex::Error::State Polynomial::findExpressionError(std::string expression) const {
 		for (const auto& errorCheck : Regex::Error::ERROR_CHECKS)
 			if (errorCheck.doCheck(expression))
 				return errorCheck.state;
