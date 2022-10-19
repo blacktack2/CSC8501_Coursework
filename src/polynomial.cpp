@@ -44,7 +44,7 @@ namespace Algebra {
 		return mIsLoaded;
 	}
 
-	std::vector<int> Polynomial::apply(std::vector<int> range) {
+	Algebra::set_t Polynomial::apply(Algebra::set_t range) {
 		for (auto& y : range) {
 			int x = y;
 			y = 0;

@@ -10,7 +10,7 @@ FileHandler::FileHandler() {
 
 }
 
-bool FileHandler::readSets(std::string filename, std::vector<std::vector<int>>& sets) {
+bool FileHandler::readSets(std::string filename, std::vector<Algebra::set_t>& sets) {
 	std::ifstream file;
 	file.open(SEQUENCE_PATH(filename));
 	if (!file.is_open()) {
@@ -23,7 +23,7 @@ bool FileHandler::readSets(std::string filename, std::vector<std::vector<int>>& 
 	return true;
 }
 
-bool FileHandler::writeSets(std::string filename, const std::vector<std::vector<int>> sets) {
+bool FileHandler::writeSets(std::string filename, const std::vector<Algebra::set_t> sets) {
 	std::ofstream file;
 	file.open(SEQUENCE_PATH(filename));
 	writeSets(file, sets);
@@ -67,12 +67,12 @@ std::string FileHandler::getError() {
 	return ERROR_MESSAGES.find(mCurrentErrorState)->second;
 }
 
-bool FileHandler::readSets(std::ifstream& stream, std::vector<std::vector<int>>& sets) {
+bool FileHandler::readSets(std::ifstream& stream, std::vector<Algebra::set_t>& sets) {
 
 	return true;
 }
 
-bool FileHandler::writeSets(std::ofstream& stream, const std::vector<std::vector<int>> sets) {
+bool FileHandler::writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets) {
 	std::vector<std::string> setLines;
 	for (auto& set : sets)
 		setLines.push_back(setToString(set));
@@ -85,7 +85,7 @@ bool FileHandler::writeSets(std::ofstream& stream, const std::vector<std::vector
 	return true;
 }
 
-std::string FileHandler::setToString(const std::vector<int> set) {
+std::string FileHandler::setToString(const Algebra::set_t set) {
 	if (set.empty()) return "";
 	std::ostringstream oss;
 	std::copy(set.begin(), set.end() - 1, std::ostream_iterator<int>(oss, SEQUENCE_ELEMENT_DELIMITER.c_str()));
