@@ -150,12 +150,41 @@ private:
 	const MenuContent SAVE_MENU = {
 		[this]() { return "Save...\n";  },
 		{
-			{"polynomial", [this]() {}, "Save current polynomial to a file"},
+			{"polynomial", [this]() { mMenuStack.push({SAVE_POLYNOMIAL_MENU}); }, "Save current polynomial to a file"},
 			{"sequence", [this]() { mMenuStack.push({SAVE_SEQUENCE_MENU}); }, "Save current sequence to a file"},
 			{"back", [this]() { softPopMenu(); }, ""},
 		},
 		{
 
+		}
+	};
+	const MenuContent SAVE_POLYNOMIAL_MENU = {
+		[this]() { return "Save polynomial expression...\n";  },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "What do you want to call the file?\n"; },
+				[this](std::string input) {
+			if (mFileHandler.expressionFileExists(input)) {
+				std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
+				std::string action = requestUserInput();
+				if (action == "a") {
+					if (mFileHandler.appendExpression(input, mCurrentPolynomial))
+						return std::make_pair(1, "Successfully appended polynomial to '" + input + "'\n");
+				} else if (action == "o") {
+					if (mFileHandler.writeExpressions(input, std::vector<Algebra::Polynomial>{mCurrentPolynomial}))
+						return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
+				} else {
+					return std::make_pair(0, std::string(""));
+				}
+			} else if (mFileHandler.writeExpressions(input, std::vector<Algebra::Polynomial>{mCurrentPolynomial})) {
+				return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
+			}
+			return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
+	}
+			}
 		}
 	};
 	const MenuContent SAVE_SEQUENCE_MENU = {

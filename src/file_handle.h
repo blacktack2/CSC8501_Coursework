@@ -41,9 +41,9 @@ private:
 	bool writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets);
 	bool appendSet(std::ofstream& stream, const Algebra::set_t set);
 
-	bool readExpressions(std::ifstream& filename, std::vector<Algebra::Polynomial>& expressions);
-	bool writeExpressions(std::ofstream& filename, const std::vector<Algebra::Polynomial> expressions);
-	bool appendExpression(std::ofstream& filename, const Algebra::Polynomial expressions);
+	bool readExpressions(std::ifstream& stream, std::vector<Algebra::Polynomial>& expressions);
+	bool writeExpressions(std::ofstream& stream, const std::vector<Algebra::Polynomial> expressions);
+	bool appendExpression(std::ofstream& stream, const Algebra::Polynomial expression);
 
 	const std::string SEQUENCE_EXTENSION = ".sequence";
 	const std::string EXPRESSION_EXTENSION = ".expression";

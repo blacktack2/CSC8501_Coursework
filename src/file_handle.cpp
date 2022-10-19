@@ -39,6 +39,35 @@ bool FileHandler::appendSet(std::string filename, const Algebra::set_t set) {
 	return true;
 }
 
+bool FileHandler::readExpressions(std::string filename, std::vector<Algebra::Polynomial>& expressions) {
+	std::ifstream file;
+	file.open(EXPRESSION_PATH(filename));
+	if (!file.is_open()) {
+		mCurrentErrorState = FileNotFound;
+		return false;
+	}
+	readExpressions(file, expressions);
+	file.close();
+	mCurrentErrorState = NoError;
+	return true;
+}
+
+bool FileHandler::writeExpressions(std::string filename, const std::vector<Algebra::Polynomial> expressions) {
+	std::ofstream file;
+	file.open(EXPRESSION_PATH(filename));
+	writeExpressions(file, expressions);
+	file.close();
+	return true;
+}
+
+bool FileHandler::appendExpression(std::string filename, const Algebra::Polynomial expressions) {
+	std::ofstream file;
+	file.open(EXPRESSION_PATH(filename), std::ios::app);
+	appendExpression(file, expressions);
+	file.close();
+	return true;
+}
+
 bool FileHandler::sequenceFileExists(std::string filename) {
 	std::vector<std::string> files = getSequenceFiles();
 	return std::find(files.begin(), files.end(), filename) != files.end();
@@ -87,7 +116,6 @@ bool FileHandler::writeSets(std::ofstream& stream, const std::vector<Algebra::se
 	std::ostringstream oss;
 	if (!setLines.empty()) {
 		std::copy(setLines.begin(), setLines.end(), std::ostream_iterator<std::string>(oss, SEQUENCE_DELIMITER.c_str()));
-		//oss << setLines.back();
 	}
 	stream << oss.str();
 	return true;
@@ -95,5 +123,20 @@ bool FileHandler::writeSets(std::ofstream& stream, const std::vector<Algebra::se
 
 bool FileHandler::appendSet(std::ofstream& stream, const Algebra::set_t set) {
 	stream << Algebra::setToString(set) << SEQUENCE_DELIMITER;
+	return true;
+}
+
+bool FileHandler::readExpressions(std::ifstream& stream, std::vector<Algebra::Polynomial>& expressions) {
+	return true;
+}
+
+bool FileHandler::writeExpressions(std::ofstream& stream, const std::vector<Algebra::Polynomial> expressions) {
+	for (const auto& expression : expressions)
+		stream << expression.toString() << EXPRESSION_DELIMITER;
+	return true;
+}
+
+bool FileHandler::appendExpression(std::ofstream& stream, const Algebra::Polynomial expression) {
+	stream << expression.toString() << EXPRESSION_DELIMITER;
 	return true;
 }

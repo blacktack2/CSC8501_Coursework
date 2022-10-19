@@ -61,7 +61,7 @@ namespace Algebra {
 
 		void clear();
 		void parseFrom(std::string expression);
-		std::string toString();
+		std::string toString() const;
 
 		Regex::Error::State getErrorState();
 		bool isLoaded();

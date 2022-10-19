@@ -31,7 +31,7 @@ namespace Algebra {
 		mIsLoaded = true;
 	}
 
-	std::string Polynomial::toString() {
+	std::string Polynomial::toString() const {
 		std::vector<std::pair<std::string, bool>> components;
 		for (int exponent = Limits::MAX_EXPONENT; exponent >= 0; exponent--) {
 			const int coefficient = std::abs(mCoefficients[exponent]);
