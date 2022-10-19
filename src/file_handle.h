@@ -12,9 +12,9 @@ class FileHandler {
 public:
 	FileHandler();
 
-	bool readSets(std::string filename, std::vector<std::vector<int>>& sets);
-	bool writeSets(std::string filename, const std::vector<std::vector<int>> sets);
-	bool appendSet(std::string filename, const std::vector<int> set);
+	bool readSets(std::string filename, std::vector<Algebra::set_t>& sets);
+	bool writeSets(std::string filename, const std::vector<Algebra::set_t> sets);
+	bool appendSet(std::string filename, const Algebra::set_t set);
 
 	bool sequenceFileExists(std::string filename);
 	bool expressionFileExists(std::string filename);
@@ -33,11 +33,11 @@ public:
 		{FileNotFound, "File not found"},
 	};
 private:
-	bool readSets(std::ifstream& stream, std::vector<std::vector<int>>& sets);
-	bool writeSets(std::ofstream& stream, const std::vector<std::vector<int>> sets);
-	bool appendSet(std::ofstream& stream, const std::vector<int> set);
+	bool readSets(std::ifstream& stream, std::vector<Algebra::set_t>& sets);
+	bool writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets);
+	bool appendSet(std::ofstream& stream, const Algebra::set_t set);
 
-	std::string setToString(const std::vector<int> set);
+	std::string setToString(const Algebra::set_t set);
 
 	const std::string SEQUENCE_EXTENSION = ".sequence";
 	const std::string EXPRESSION_EXTENSION = ".expression";
