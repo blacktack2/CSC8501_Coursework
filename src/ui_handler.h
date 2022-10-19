@@ -77,8 +77,12 @@ private:
 					mMenuStack.push({GENERATE_MENU});
 			}, "Generate polynomial from the currently loaded sequence"},
 			{"list", [this]() {
-				std::vector<std::string> polynomials = mFileHandler.getExpressionFiles();
-				std::vector<std::string> sequences   = mFileHandler.getSequenceFiles();
+				std::vector<std::string> polynomials;
+				std::vector<std::string> sequences;
+				if (!mFileHandler.getSequenceFiles(sequences) || !mFileHandler.getExpressionFiles(polynomials)) {
+					std::cout << "[Error] " << mFileHandler.getError() << "\n";
+					return;
+				}
 				std::cout << "Polynomials: ";
 				printFilenames(polynomials);
 				std::cout << "Sequences: ";

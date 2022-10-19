@@ -11,6 +11,7 @@ FileHandler::FileHandler() {
 }
 
 bool FileHandler::readSets(std::string filename, std::vector<Algebra::set_t>& sets) {
+	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ifstream file;
 	file.open(SEQUENCE_PATH(filename));
 	if (!file.is_open()) {
@@ -24,6 +25,7 @@ bool FileHandler::readSets(std::string filename, std::vector<Algebra::set_t>& se
 }
 
 bool FileHandler::writeSets(std::string filename, const std::vector<Algebra::set_t> sets) {
+	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(SEQUENCE_PATH(filename));
 	writeSets(file, sets);
@@ -32,6 +34,7 @@ bool FileHandler::writeSets(std::string filename, const std::vector<Algebra::set
 }
 
 bool FileHandler::appendSet(std::string filename, const Algebra::set_t set) {
+	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(SEQUENCE_PATH(filename), std::ios::app);
 	appendSet(file, set);
@@ -40,6 +43,7 @@ bool FileHandler::appendSet(std::string filename, const Algebra::set_t set) {
 }
 
 bool FileHandler::readExpressions(std::string filename, std::vector<Algebra::Polynomial>& expressions) {
+	if (!checkDirectory(EXPRESSION_DIRECTORY)) return false;
 	std::ifstream file;
 	file.open(EXPRESSION_PATH(filename));
 	if (!file.is_open()) {
@@ -53,6 +57,7 @@ bool FileHandler::readExpressions(std::string filename, std::vector<Algebra::Pol
 }
 
 bool FileHandler::writeExpressions(std::string filename, const std::vector<Algebra::Polynomial> expressions) {
+	if (!checkDirectory(EXPRESSION_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(EXPRESSION_PATH(filename));
 	writeExpressions(file, expressions);
@@ -61,6 +66,7 @@ bool FileHandler::writeExpressions(std::string filename, const std::vector<Algeb
 }
 
 bool FileHandler::appendExpression(std::string filename, const Algebra::Polynomial expressions) {
+	if (!checkDirectory(EXPRESSION_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(EXPRESSION_PATH(filename), std::ios::app);
 	appendExpression(file, expressions);
@@ -69,35 +75,35 @@ bool FileHandler::appendExpression(std::string filename, const Algebra::Polynomi
 }
 
 bool FileHandler::sequenceFileExists(std::string filename) {
-	std::vector<std::string> files = getSequenceFiles();
-	return std::find(files.begin(), files.end(), filename) != files.end();
+	std::vector<std::string> files;
+	return getSequenceFiles(files) && std::find(files.begin(), files.end(), filename) != files.end();
 }
 
 bool FileHandler::expressionFileExists(std::string filename) {
-	std::vector<std::string> files = getExpressionFiles();
-	return std::find(files.begin(), files.end(), filename) != files.end();
+	std::vector<std::string> files;
+	return getExpressionFiles(files) && std::find(files.begin(), files.end(), filename) != files.end();
 }
 
-std::vector<std::string> FileHandler::getSequenceFiles() {
-	std::vector<std::string> files;
+bool FileHandler::getSequenceFiles(std::vector<std::string>& filenames) {
+	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	for (const auto& entry : std::filesystem::directory_iterator(SEQUENCE_DIRECTORY)) {
 		std::string filepath = entry.path().string();
 		std::smatch m;
 		if (std::regex_search(filepath, m, SEQUENCE_FILE_REGEX))
-			files.push_back(m[1]);
+			filenames.push_back(m[1]);
 	}
-	return files;
+	return true;
 }
 
-std::vector<std::string> FileHandler::getExpressionFiles() {
-	std::vector<std::string> files;
+bool FileHandler::getExpressionFiles(std::vector<std::string>& filenames) {
+	if (!checkDirectory(EXPRESSION_DIRECTORY)) return false;
 	for (const auto& entry : std::filesystem::directory_iterator(EXPRESSION_DIRECTORY)) {
 		std::string filepath = entry.path().string();
 		std::smatch m;
 		if (std::regex_search(filepath, m, EXPRESSION_FILE_REGEX))
-			files.push_back(m[1]);
+			filenames.push_back(m[1]);
 	}
-	return files;
+	return true;
 }
 
 std::string FileHandler::getError() {
@@ -138,5 +144,13 @@ bool FileHandler::writeExpressions(std::ofstream& stream, const std::vector<Alge
 
 bool FileHandler::appendExpression(std::ofstream& stream, const Algebra::Polynomial expression) {
 	stream << expression.toString() << EXPRESSION_DELIMITER;
+	return true;
+}
+
+bool FileHandler::checkDirectory(std::string dir) {
+	if (!std::filesystem::exists(dir)) {
+		mCurrentErrorState = DirectoryMissing;
+		return false;
+	}
 	return true;
 }

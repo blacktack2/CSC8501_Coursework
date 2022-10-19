@@ -23,18 +23,20 @@ public:
 	bool sequenceFileExists(std::string filename);
 	bool expressionFileExists(std::string filename);
 
-	std::vector<std::string> getSequenceFiles();
-	std::vector<std::string> getExpressionFiles();
+	bool getSequenceFiles(std::vector<std::string>& filenames);
+	bool getExpressionFiles(std::vector<std::string>& filenames);
 
 	enum ErrorState {
 		NoError,
-		FileNotFound
+		FileNotFound,
+		DirectoryMissing,
 	};
 	std::string getError();
 
 	const std::map<ErrorState, std::string> ERROR_MESSAGES = {
 		{NoError, ""},
 		{FileNotFound, "File not found"},
+		{DirectoryMissing, "Missing resource directory"},
 	};
 private:
 	bool readSets(std::ifstream& stream, std::vector<Algebra::set_t>& sets);
@@ -44,6 +46,8 @@ private:
 	bool readExpressions(std::ifstream& stream, std::vector<Algebra::Polynomial>& expressions);
 	bool writeExpressions(std::ofstream& stream, const std::vector<Algebra::Polynomial> expressions);
 	bool appendExpression(std::ofstream& stream, const Algebra::Polynomial expression);
+
+	bool checkDirectory(std::string dir);
 
 	const std::string SEQUENCE_EXTENSION = ".sequence";
 	const std::string EXPRESSION_EXTENSION = ".expression";
