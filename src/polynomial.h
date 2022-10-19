@@ -47,6 +47,8 @@ namespace Algebra {
 
 	typedef std::vector<int> set_t;
 
+	std::string setToString(const set_t set);
+
 	namespace Limits {
 		const int MAX_CONSTANT = 1000;
 		const int MAX_COEFFICIENT = 9;

@@ -16,6 +16,10 @@ public:
 	bool writeSets(std::string filename, const std::vector<Algebra::set_t> sets);
 	bool appendSet(std::string filename, const Algebra::set_t set);
 
+	bool readExpressions(std::string filename, std::vector<Algebra::Polynomial>& expressions);
+	bool writeExpressions(std::string filename, const std::vector<Algebra::Polynomial> expressions);
+	bool appendExpression(std::string filename, const Algebra::Polynomial expressions);
+
 	bool sequenceFileExists(std::string filename);
 	bool expressionFileExists(std::string filename);
 
@@ -37,7 +41,9 @@ private:
 	bool writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets);
 	bool appendSet(std::ofstream& stream, const Algebra::set_t set);
 
-	std::string setToString(const Algebra::set_t set);
+	bool readExpressions(std::ifstream& filename, std::vector<Algebra::Polynomial>& expressions);
+	bool writeExpressions(std::ofstream& filename, const std::vector<Algebra::Polynomial> expressions);
+	bool appendExpression(std::ofstream& filename, const Algebra::Polynomial expressions);
 
 	const std::string SEQUENCE_EXTENSION = ".sequence";
 	const std::string EXPRESSION_EXTENSION = ".expression";
@@ -49,7 +55,6 @@ private:
 	const std::regex EXPRESSION_FILE_REGEX = std::regex(".*\\/([a-zA-Z]+)\\.expression");
 
 	const std::string SEQUENCE_DELIMITER = "\n";
-	const std::string SEQUENCE_ELEMENT_DELIMITER = ",";
 	const std::string EXPRESSION_DELIMITER = "\n";
 
 	ErrorState mCurrentErrorState = NoError;

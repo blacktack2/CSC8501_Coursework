@@ -31,6 +31,14 @@ bool FileHandler::writeSets(std::string filename, const std::vector<Algebra::set
 	return true;
 }
 
+bool FileHandler::appendSet(std::string filename, const Algebra::set_t set) {
+	std::ofstream file;
+	file.open(SEQUENCE_PATH(filename), std::ios::app);
+	appendSet(file, set);
+	file.close();
+	return true;
+}
+
 bool FileHandler::sequenceFileExists(std::string filename) {
 	std::vector<std::string> files = getSequenceFiles();
 	return std::find(files.begin(), files.end(), filename) != files.end();
@@ -75,20 +83,17 @@ bool FileHandler::readSets(std::ifstream& stream, std::vector<Algebra::set_t>& s
 bool FileHandler::writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets) {
 	std::vector<std::string> setLines;
 	for (auto& set : sets)
-		setLines.push_back(setToString(set));
+		setLines.push_back(Algebra::setToString(set));
 	std::ostringstream oss;
 	if (!setLines.empty()) {
-		std::copy(setLines.begin(), setLines.end() - 1, std::ostream_iterator<std::string>(oss, SEQUENCE_DELIMITER.c_str()));
-		oss << setLines.back();
+		std::copy(setLines.begin(), setLines.end(), std::ostream_iterator<std::string>(oss, SEQUENCE_DELIMITER.c_str()));
+		//oss << setLines.back();
 	}
 	stream << oss.str();
 	return true;
 }
 
-std::string FileHandler::setToString(const Algebra::set_t set) {
-	if (set.empty()) return "";
-	std::ostringstream oss;
-	std::copy(set.begin(), set.end() - 1, std::ostream_iterator<int>(oss, SEQUENCE_ELEMENT_DELIMITER.c_str()));
-	oss << set.back();
-	return oss.str();
+bool FileHandler::appendSet(std::ofstream& stream, const Algebra::set_t set) {
+	stream << Algebra::setToString(set) << SEQUENCE_DELIMITER;
+	return true;
 }

@@ -1,6 +1,15 @@
 #include "polynomial.h"
+#include "sstream"
 
 namespace Algebra {
+	std::string setToString(const set_t set) {
+		if (set.empty()) return "";
+		std::ostringstream oss;
+		std::copy(set.begin(), set.end() - 1, std::ostream_iterator<int>(oss, ","));
+		oss << set.back();
+		return oss.str();
+	}
+
 	Polynomial::Polynomial() : mCoefficients() {
 		clear();
 	}

@@ -89,7 +89,7 @@ private:
 		},
 		{
 			{
-				[this]() { return "Type in your expression in the format:\nAx^4 + Bx^3 + Cx^2 + Dx + E\n"; },
+				[this]() { return "Type your expression in the format:\nAx^4 + Bx^3 + Cx^2 + Dx + E\n"; },
 				[this](std::string input) {
 					mCurrentPolynomial.clear();
 					mCurrentPolynomial.parseFrom(input);
@@ -167,10 +167,21 @@ private:
 			{
 				[this]() { return "What do you want to call the file?\n"; },
 				[this](std::string input) {
-					if (mFileHandler.sequenceFileExists(input))
-						return std::make_pair(0, std::string("File already exists\n"));
-					else if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence}))
+					if (mFileHandler.sequenceFileExists(input)) {
+						std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
+						std::string action = requestUserInput();
+						if (action == "a") {
+							if (mFileHandler.appendSet(input, mCurrentSequence))
+								return std::make_pair(1, "Successfully appended sequence to '" + input + "'\n");
+						} else if (action == "o") {
+							if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence}))
+								return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
+						} else {
+							return std::make_pair(0, std::string(""));
+						}
+					} else if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence})) {
 						return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
+					}
 					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 				}
 			}
