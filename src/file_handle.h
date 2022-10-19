@@ -6,6 +6,8 @@
 #include <string>
 #include <vector>
 
+#include "polynomial.h"
+
 class FileHandler {
 public:
 	FileHandler();

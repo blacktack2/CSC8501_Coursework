@@ -136,7 +136,7 @@ private:
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
 						int sequenceStep = parsedInput.value();
-						std::vector<int> sequence;
+						Algebra::set_t sequence;
 						for (int i = sequenceStart; i <= sequenceEnd; i += sequenceStep)
 							sequence.push_back(i);
 						mCurrentSequence = mCurrentPolynomial.apply(sequence);
@@ -169,7 +169,7 @@ private:
 				[this](std::string input) {
 					if (mFileHandler.sequenceFileExists(input))
 						return std::make_pair(0, std::string("File already exists\n"));
-					else if (mFileHandler.writeSets(input, std::vector<std::vector<int>>{mCurrentSequence}))
+					else if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence}))
 						return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
 					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 				}
@@ -198,7 +198,7 @@ private:
 
 	bool mIsRunning = false;
 	Algebra::Polynomial mCurrentPolynomial;
-	std::vector<int> mCurrentSequence;
+	Algebra::set_t mCurrentSequence;
 
 	FileHandler mFileHandler;
 };

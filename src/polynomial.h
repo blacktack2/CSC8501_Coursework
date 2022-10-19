@@ -45,6 +45,8 @@ namespace Algebra {
 		}
 	}
 
+	typedef std::vector<int> set_t;
+
 	namespace Limits {
 		const int MAX_CONSTANT = 1000;
 		const int MAX_COEFFICIENT = 9;
@@ -62,7 +64,7 @@ namespace Algebra {
 		Regex::Error::State getErrorState();
 		bool isLoaded();
 
-		std::vector<int> apply(std::vector<int> range);
+		set_t apply(set_t range);
 	private:
 		bool isExpressionValid(std::string expression);
 		bool doCoefficientsExeedMax(std::string expression);
