@@ -88,6 +88,7 @@ private:
 		},
 		{
 			{"create", [this]() { pushToMenuStack(CREATE_MENU); }, "Create a new polynomial/sequence"},
+			{"delete", [this]() { pushToMenuStack(DELETE_MENU); }, "Delete one of the loaded polynomials/sequences"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -181,6 +182,56 @@ private:
 		{
 			{"sequenceStart", 0},
 			{"sequenceEnd", 0},
+		}
+	};
+	const MenuContent DELETE_MENU = {
+		[this]() { return "Delete...\n";  },
+		{
+			{"polynomial", [this]() { pushToMenuStack(DELETE_POLYNOMIAL_MENU); }, "Delete polynomial"},
+			{"sequence", [this]() { pushToMenuStack(DELETE_SEQUENCE_MENU); }, "Delete sequence"},
+			{"back", [this]() { softPopMenu(); }, ""},
+		}
+	};
+	const MenuContent DELETE_POLYNOMIAL_MENU = {
+		[this]() { return "Deleting polynomial...\n";  },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Type the index of the polynomial you wish to delete\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						if (parsedInput < 0 || parsedInput >= mCurrentPolynomials.size())
+							return std::make_pair(0, "[Error] Value out of range\n");
+						mCurrentPolynomials.erase(mCurrentPolynomials.begin() + parsedInput.value());
+						return std::make_pair(1, "Successfully deleted polynomial\n");
+					}
+					return std::make_pair(0, "[Error] Expected an integer\n");
+				}
+			}
+		}
+	};
+	const MenuContent DELETE_SEQUENCE_MENU = {
+		[this]() { return "Deleting sequence...\n";  },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Type the index of the sequence you wish to delete\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						if (parsedInput < 0 || parsedInput >= mCurrentSequences.size())
+							return std::make_pair(0, "[Error] Value out of range\n");
+						mCurrentSequences.erase(mCurrentSequences.begin() + parsedInput.value());
+						return std::make_pair(1, "Successfuly deleted sequence");
+					}
+					return std::make_pair(0, "[Error] Expected an integer\n");
+				}
+			}
 		}
 	};
 	const MenuContent SAVE_MENU = {

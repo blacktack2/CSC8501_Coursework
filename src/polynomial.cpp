@@ -5,7 +5,31 @@
 
 namespace Algebra {
 	Sequence::Sequence() : mElements() {
-		clear();
+		
+	}
+
+	Sequence::Sequence(Sequence& other) {
+		*this = other;
+	}
+
+	Sequence& Sequence::operator=(Sequence& other) {
+		if (mIsLoaded = other.mIsLoaded)
+			mElements = other.mElements;
+		else
+			mElements.clear();
+		return *this;
+	}
+
+	Sequence::Sequence(Sequence&& other) {
+		*this = std::move(other);
+	}
+
+	Sequence& Sequence::operator=(Sequence&& other) {
+		if (mIsLoaded = other.mIsLoaded)
+			mElements = other.mElements;
+		else
+			mElements.clear();
+		return *this;
 	}
 
 	std::vector<int>::iterator Sequence::begin() {
@@ -83,6 +107,36 @@ namespace Algebra {
 
 	Polynomial::Polynomial() : mCoefficients() {
 		clear();
+	}
+
+	Polynomial::Polynomial(Polynomial& other) {
+		*this = other;
+	}
+
+	Polynomial& Polynomial::operator=(Polynomial& other) {
+		if (mIsLoaded = other.mIsLoaded) {
+			for (int i = 0; i < Limits::MAX_EXPONENT + 1; i++)
+				mCoefficients[i] = other.mCoefficients[i];
+		} else {
+			std::fill_n(mCoefficients, Limits::MAX_EXPONENT + 1, 0);
+		}
+		mCurrentErrorState = other.mCurrentErrorState;
+		return *this;
+	}
+
+	Polynomial::Polynomial(Polynomial&& other) {
+		*this = std::move(other);
+	}
+
+	Polynomial& Polynomial::operator=(Polynomial&& other) {
+		if (mIsLoaded = other.mIsLoaded) {
+			for (int i = 0; i < Limits::MAX_EXPONENT + 1; i++)
+				mCoefficients[i] = other.mCoefficients[i];
+		} else {
+			std::fill_n(mCoefficients, Limits::MAX_EXPONENT + 1, 0);
+		}
+		mCurrentErrorState = other.mCurrentErrorState;
+		return *this;
 	}
 
 	void Polynomial::clear() {

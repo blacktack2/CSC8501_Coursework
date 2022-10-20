@@ -35,6 +35,10 @@ namespace Algebra {
 	class Sequence {
 	public:
 		Sequence();
+		Sequence(Sequence& other);
+		Sequence& operator=(Sequence& other);
+		Sequence(Sequence&& other);
+		Sequence& operator=(Sequence&& other);
 
 		std::vector<int>::iterator begin();
 		std::vector<int>::const_iterator begin() const;
@@ -82,6 +86,10 @@ namespace Algebra {
 	class Polynomial {
 	public:
 		Polynomial();
+		Polynomial(Polynomial& other);
+		Polynomial& operator=(Polynomial& other);
+		Polynomial(Polynomial&& other);
+		Polynomial& operator=(Polynomial&& other);
 
 		void clear();
 		bool parseFrom(std::string expression);
