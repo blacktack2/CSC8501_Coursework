@@ -303,9 +303,53 @@ private:
 	const MenuContent LOAD_MENU = {
 		[this]() { return "";  },
 		{
-			{"polynomial", [this]() {}, "Load polynomial from a file"},
-			{"sequence", [this]() {}, "Load sequence from a file"},
+			{"polynomial", [this]() { pushToMenuStack(LOAD_POLYNOMIAL_MENU); }, "Load polynomial from a file"},
+			{"sequence", [this]() { pushToMenuStack(LOAD_SEQUENCE_MENU); }, "Load sequence from a file"},
 			{"back", [this]() { softPopMenu(); }, ""},
+		}
+	};
+	const MenuContent LOAD_POLYNOMIAL_MENU = {
+		[this]() { return "Load polynomial expression...\n";  },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Which file would you like to read from?\n"; },
+				[this](std::string input) {
+					if (mFileHandler.expressionFileExists(input)) {
+						mCurrentPolynomials.clear();
+						if (mFileHandler.readExpressions(input, mCurrentPolynomials)) {
+							return std::make_pair(1, std::string("Successfully read polynomials from file\n"));
+						} else {
+							return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
+						}
+					}
+					return std::make_pair(0, std::string("[Error] no file named '" + input + "' exists\n"));
+				}
+			}
+		}
+	};
+	const MenuContent LOAD_SEQUENCE_MENU = {
+		[this]() { return "Load sequence...\n";  },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Which file would you like to read from?\n"; },
+				[this](std::string input) {
+					if (mFileHandler.sequenceFileExists(input)) {
+						mCurrentSequences.clear();
+						if (mFileHandler.readSequences(input, mCurrentSequences)) {
+							return std::make_pair(1, std::string("Successfully read sequences from file\n"));
+						} else {
+							return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
+						}
+					}
+					return std::make_pair(0, std::string("[Error] no file named '" + input + "' exists\n"));
+				}
+			}
 		}
 	};
 

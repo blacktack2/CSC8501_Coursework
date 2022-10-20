@@ -111,6 +111,15 @@ std::string FileHandler::getError() {
 }
 
 bool FileHandler::readSequences(std::ifstream& stream, std::vector<Algebra::Sequence>& sequences) {
+	std::string line;
+	std::vector<Algebra::Sequence> newSequences;
+	while (std::getline(stream, line)) {
+		if (!newSequences.emplace_back().parseFrom(line)) {
+			mCurrentErrorState = MalformedExpression;
+			return false;
+		}
+	}
+	sequences.insert(sequences.end(), newSequences.begin(), newSequences.end());
 	return true;
 }
 
@@ -127,6 +136,15 @@ bool FileHandler::writeSequences(std::ofstream& stream, const std::vector<Algebr
 }
 
 bool FileHandler::readExpressions(std::ifstream& stream, std::vector<Algebra::Polynomial>& expressions) {
+	std::string line;
+	std::vector<Algebra::Polynomial> newExpressions;
+	while (std::getline(stream, line)) {
+		if (!newExpressions.emplace_back().parseFrom(line)) {
+			mCurrentErrorState = MalformedExpression;
+			return false;
+		}
+	}
+	expressions.insert(expressions.end(), newExpressions.begin(), newExpressions.end());
 	return true;
 }
 

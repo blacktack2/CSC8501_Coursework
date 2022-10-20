@@ -9,7 +9,7 @@ namespace Algebra {
 	namespace Regex {
 		namespace Validate {
 			const std::regex POLYNOMIAL("^-?(([0-9]?x(\\^[0-4])?)|([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000))((\\+|-)(([0-9]?x(\\^[0-4])?)|([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)))*$");
-			const std::regex SEQUENCE("^(-?[0-9]+(,-?[0-9])+)?$");
+			const std::regex SEQUENCE("^(-?[0-9]+(,-?[0-9]+)+)?$");
 		}
 		namespace Search {
 			const std::regex POLYNOMIAL_COMPONENT("(?=(^|\\+|-)(([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)|(([1-9])?x(\\^([0-4]))?))($|\\+|-))");
@@ -17,7 +17,7 @@ namespace Algebra {
 			const int COMPONENT_MATCH_COEFFICIENT = 5;
 			const int COMPONENT_MATCH_EXPONENT    = 7;
 			const int COMPONENT_MATCH_CONSTANT    = 3;
-			const std::regex SEQUENCE_ELEMENT("(^|,)(-?[0-9])(,|$)");
+			const std::regex SEQUENCE_ELEMENT("(^|,)(-?[0-9]+)(,|$)");
 			const int ELEMENT_MATCH = 2;
 		}
 		namespace Error {

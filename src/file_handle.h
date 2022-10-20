@@ -51,6 +51,8 @@ private:
 	enum ErrorState {
 		NoError,
 		FileNotFound,
+		MalformedExpression,
+		MalformedSequence,
 		DirectoryMissing,
 	};
 	ErrorState mCurrentErrorState = NoError;
