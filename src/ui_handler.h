@@ -64,20 +64,19 @@ private:
 		action_map_t actionMap;
 		std::vector<DataActionSet> dataActions;
 	};
-	
+
 	const MenuContent ROOT_MENU = {
 		[this]() {
 			std::string prompt = "Polynomials:\n";
 			for (int i = 0; i < mCurrentPolynomials.size(); i++)
-				prompt += "[" + std::vformat("{:" + std::to_string((int) std::log10(std::max(1, (int) mCurrentPolynomials.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentPolynomials[i].toString() + ")\n";
+				prompt += "[" + std::vformat("{:" + std::to_string((int)std::log10(std::max(1, (int)mCurrentPolynomials.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentPolynomials[i].toString() + ")\n";
 			prompt += "Sequences:\n";
 			for (int i = 0; i < mCurrentSequences.size(); i++)
-				prompt += "[" + std::vformat("{:" + std::to_string((int) std::log10(std::max(1, (int) mCurrentSequences.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentSequences[i].toString() + ")\n";
+				prompt += "[" + std::vformat("{:" + std::to_string((int)std::log10(std::max(1, (int)mCurrentSequences.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentSequences[i].toString() + ")\n";
 			return prompt;
 		},
 		{
-			{"newpoly", [this]() { mMenuStack.push({CREATE_POLYNOMIAL_MENU}); }, "Create a new polynomial"},
-			{"newseq", [this]() { mMenuStack.push({CREATE_SEQUENCE_MENU}); }, "Create a new sequence"},
+			{"create", [this]() { mMenuStack.push({CREATE_MENU}); }, "Create a new polynomial/sequence"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -91,6 +90,17 @@ private:
 			{"save", [this]() { mMenuStack.push({SAVE_MENU}); }, "Save current polynomial/sequence to a file"},
 			{"load", [this]() { mMenuStack.push({LOAD_MENU}); }, "Load polynomial/sequence from a file"},
 			{"quit", [this]() { stopLoop(); }, ""},
+		},
+		{
+
+		}
+	};
+	const MenuContent CREATE_MENU = {
+		[this]() { return "Save...\n";  },
+		{
+			{"polynomial", [this]() { mMenuStack.push({CREATE_POLYNOMIAL_MENU}); }, "Create new polynomial"},
+			{"sequence", [this]() { mMenuStack.push({CREATE_SEQUENCE_MENU}); }, "Create new sequence"},
+			{"back", [this]() { softPopMenu(); }, ""},
 		},
 		{
 
