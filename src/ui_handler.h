@@ -1,5 +1,6 @@
 #pragma once
 
+#include <any>
 #include <format>
 #include <functional>
 #include <iostream>
@@ -23,18 +24,6 @@ public:
 	void mainloop();
 	void stopLoop();
 private:
-	void hangUntilEnterPressed(bool isProgramExit);
-	std::string requestUserInput();
-	std::optional<int> castUserInputInt(std::string input);
-
-	void softPopMenu();
-
-	void handlePrompt();
-	void parseInput(std::string input);
-	void parseDataInput(std::string data);
-
-	void printFilenames(std::vector<std::string> filenames) const;
-
 	typedef std::function<void()> user_action_t;
 	class ActionData {
 	public:
@@ -62,8 +51,30 @@ private:
 	struct MenuContent {
 		action_prompt_t actionPrefixPrompt;
 		action_map_t actionMap;
-		std::vector<DataActionSet> dataActions;
+		std::vector<DataActionSet> dataActions{};
+		std::map<std::string, std::any> availableData{};
 	};
+
+	struct MenuStackData {
+		MenuContent content;
+		int currentDataAction;
+		bool justEntered;
+		std::map<std::string, std::any> dataMap;
+	};
+
+	void hangUntilEnterPressed(bool isProgramExit);
+	std::string requestUserInput();
+	std::optional<int> castUserInputInt(std::string input);
+
+	void softPopMenu();
+	std::any& getCurrentMenuData(std::string name);
+	void pushToMenuStack(const MenuContent& content);
+
+	void handlePrompt();
+	void parseInput(std::string input);
+	void parseDataInput(std::string data);
+
+	void printFilenames(std::vector<std::string> filenames) const;
 
 	const MenuContent ROOT_MENU = {
 		[this]() {
@@ -76,7 +87,7 @@ private:
 			return prompt;
 		},
 		{
-			{"create", [this]() { mMenuStack.push({CREATE_MENU}); }, "Create a new polynomial/sequence"},
+			{"create", [this]() { pushToMenuStack(CREATE_MENU); }, "Create a new polynomial/sequence"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -87,23 +98,17 @@ private:
 				std::cout << "Polynomials: <" << Utils::join(polynomials) << ">\n";
 				std::cout << "Sequences: <" << Utils::join(sequences) << ">\n";
 			}, "List all available polynomial and sequence files"},
-			{"save", [this]() { mMenuStack.push({SAVE_MENU}); }, "Save current polynomial/sequence to a file"},
-			{"load", [this]() { mMenuStack.push({LOAD_MENU}); }, "Load polynomial/sequence from a file"},
+			{"save", [this]() { pushToMenuStack(SAVE_MENU); }, "Save current polynomial/sequence to a file"},
+			{"load", [this]() { pushToMenuStack(LOAD_MENU); }, "Load polynomial/sequence from a file"},
 			{"quit", [this]() { stopLoop(); }, ""},
-		},
-		{
-
 		}
 	};
 	const MenuContent CREATE_MENU = {
-		[this]() { return "Save...\n";  },
+		[this]() { return "Create...\n";  },
 		{
-			{"polynomial", [this]() { mMenuStack.push({CREATE_POLYNOMIAL_MENU}); }, "Create new polynomial"},
-			{"sequence", [this]() { mMenuStack.push({CREATE_SEQUENCE_MENU}); }, "Create new sequence"},
+			{"polynomial", [this]() { pushToMenuStack(CREATE_POLYNOMIAL_MENU); }, "Create new polynomial"},
+			{"sequence", [this]() { pushToMenuStack(CREATE_SEQUENCE_MENU); }, "Create new sequence"},
 			{"back", [this]() { softPopMenu(); }, ""},
-		},
-		{
-
 		}
 	};
 	const MenuContent CREATE_POLYNOMIAL_MENU = {
@@ -127,7 +132,6 @@ private:
 			}
 		}
 	};
-	int sequenceStart, sequenceEnd;
 	const MenuContent CREATE_SEQUENCE_MENU = {
 		[this]() { return "Creating new sequence...\n";  },
 		{
@@ -139,6 +143,7 @@ private:
 				[this](std::string input) {
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
+						int& sequenceStart = std::any_cast<int&>(getCurrentMenuData("sequenceStart"));
 						sequenceStart = parsedInput.value();
 						return std::make_pair(1, std::string());
 					}
@@ -150,6 +155,7 @@ private:
 				[this](std::string input) {
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
+						int& sequenceEnd = std::any_cast<int&>(getCurrentMenuData("sequenceEnd"));
 						sequenceEnd = parsedInput.value();
 						return std::make_pair(1, std::string());
 					}
@@ -163,23 +169,26 @@ private:
 					if (parsedInput.has_value()) {
 						int sequenceStep = parsedInput.value();
 						Algebra::Sequence& newSequence = mCurrentSequences.emplace_back();
+						int& sequenceStart = std::any_cast<int&>(getCurrentMenuData("sequenceStart"));
+						int& sequenceEnd = std::any_cast<int&>(getCurrentMenuData("sequenceEnd"));
 						newSequence.generateFrom(sequenceStart, sequenceEnd, sequenceStep);
 						return std::make_pair(1, std::string());
 					}
 					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
 				}
 			},
+		},
+		{
+			{"sequenceStart", 0},
+			{"sequenceEnd", 0},
 		}
 	};
 	const MenuContent SAVE_MENU = {
 		[this]() { return "Save...\n";  },
 		{
-			{"polynomial", [this]() { mMenuStack.push({SAVE_POLYNOMIAL_MENU}); }, "Save current polynomial to a file"},
-			{"sequence", [this]() { mMenuStack.push({SAVE_SEQUENCE_MENU}); }, "Save current sequence to a file"},
+			{"polynomial", [this]() { pushToMenuStack(SAVE_POLYNOMIAL_MENU); }, "Save current polynomial to a file"},
+			{"sequence", [this]() { pushToMenuStack(SAVE_SEQUENCE_MENU); }, "Save current sequence to a file"},
 			{"back", [this]() { softPopMenu(); }, ""},
-		},
-		{
-
 		}
 	};
 	const MenuContent SAVE_POLYNOMIAL_MENU = {
@@ -246,16 +255,7 @@ private:
 			{"polynomial", [this]() {}, "Load polynomial from a file"},
 			{"sequence", [this]() {}, "Load sequence from a file"},
 			{"back", [this]() { softPopMenu(); }, ""},
-		},
-		{
-
 		}
-	};
-
-	struct MenuStackData {
-		MenuContent content;
-		int currentDataAction = 0;
-		bool justEntered = true;
 	};
 
 	std::stack<MenuStackData> mMenuStack;

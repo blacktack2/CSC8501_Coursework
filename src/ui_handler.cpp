@@ -15,7 +15,7 @@ std::string UIHandler::ActionData::getPrompt() const {
 
 UIHandler::UIHandler() :
 mMenuStack(), mCurrentPolynomials(), mCurrentSequences(), mFileHandler() {
-	mMenuStack.push({ROOT_MENU});
+	pushToMenuStack(ROOT_MENU);
 }
 
 void UIHandler::mainloop() {
@@ -57,6 +57,14 @@ void UIHandler::softPopMenu() {
 		mMenuStack.pop();
 		mMenuStack.top().justEntered = true;
 	}
+}
+
+std::any& UIHandler::getCurrentMenuData(std::string name) {
+	return mMenuStack.top().dataMap.find(name)->second;
+}
+
+void UIHandler::pushToMenuStack(const MenuContent& content) {
+	mMenuStack.push({ content, 0, true, content.availableData});
 }
 
 void UIHandler::handlePrompt() {
