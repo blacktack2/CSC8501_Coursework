@@ -89,6 +89,13 @@ private:
 		{
 			{"create", [this]() { pushToMenuStack(CREATE_MENU); }, "Create a new polynomial/sequence"},
 			{"delete", [this]() { pushToMenuStack(DELETE_MENU); }, "Delete one of the loaded polynomials/sequences"},
+			{"clear", [this]() { pushToMenuStack(CLEAR_MENU); }, "Clear all loaded polynomials/sequences"},
+			{"apply", [this]() {
+				if (mCurrentPolynomials.empty())
+					std::cout << "Must load a polynomial to apply\n";
+				else
+					pushToMenuStack(APPLY_MENU);
+			}, "Apply a polynomial to one or all loaded sequences"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -227,9 +234,86 @@ private:
 						if (parsedInput < 0 || parsedInput >= mCurrentSequences.size())
 							return std::make_pair(0, "[Error] Value out of range\n");
 						mCurrentSequences.erase(mCurrentSequences.begin() + parsedInput.value());
-						return std::make_pair(1, "Successfuly deleted sequence");
+						return std::make_pair(1, "Successfuly deleted sequence\n");
 					}
 					return std::make_pair(0, "[Error] Expected an integer\n");
+				}
+			}
+		}
+	};
+	const MenuContent CLEAR_MENU = {
+		[this]() { return "Clear...\n";  },
+		{
+			{"polynomial", [this]() { mCurrentPolynomials.clear(); softPopMenu(); }, "Clear polynomials"},
+			{"sequence", [this]() { mCurrentSequences.clear(); softPopMenu(); }, "Clear sequences"},
+			{"back", [this]() { softPopMenu(); }, ""},
+		}
+	};
+	const MenuContent APPLY_MENU = {
+		[this]() { return "Clear...\n";  },
+		{
+			{"all", [this]() { pushToMenuStack(APPLY_ALL_MENU); }, "Apply to all loaded sequences"},
+			{"one", [this]() { pushToMenuStack(APPLY_ONE_MENU); }, "Apply to a single loaded sequence"},
+			{"back", [this]() { softPopMenu(); }, ""},
+		}
+	};
+	const MenuContent APPLY_ONE_MENU = {
+		[this]() { return "Applying polynomial...\n"; },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Which polynomial will you use?\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentPolynomials.size())
+							return std::make_pair(0, std::string("[Error] Value out of range\n"));
+						int& polyIndex = std::any_cast<int&>(getCurrentMenuData("polynomial"));
+						polyIndex = parsedInput.value();
+						return std::make_pair(1, "Using polynomial: " + mCurrentPolynomials[polyIndex].toString() + "\n");
+					}
+					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
+				}
+			},
+			{
+				[this]() { return "Which sequence will you apply to?\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentSequences.size())
+							return std::make_pair(0, "[Error] Value out of range\n");
+						int& polyIndex = std::any_cast<int&>(getCurrentMenuData("polynomial"));
+						mCurrentPolynomials[polyIndex].apply(mCurrentSequences[parsedInput.value()]);
+						return std::make_pair(1, "Successfully applied polynomial to sequence\n");
+					}
+					return std::make_pair(0, "[Error] Expected an integer\n");
+				}
+			}
+		},
+		{
+			{"polynomial", 0}
+		}
+	};
+	const MenuContent APPLY_ALL_MENU = {
+		[this]() { return "Applying polynomial...\n"; },
+		{
+			{"back", [this]() { softPopMenu(); }, ""},
+		},
+		{
+			{
+				[this]() { return "Which polynomial will you use?\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentPolynomials.size())
+							return std::make_pair(0, std::string("[Error] Value out of range\n"));
+						for (auto& sequence : mCurrentSequences)
+							mCurrentPolynomials[parsedInput.value()].apply(sequence);
+						return std::make_pair(1, "Successfully applied polynomial (" + mCurrentPolynomials[parsedInput.value()].toString() + ") to sequences\n");
+					}
+					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
 				}
 			}
 		}

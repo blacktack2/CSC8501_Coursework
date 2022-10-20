@@ -17,7 +17,7 @@ namespace Algebra {
 			const int COMPONENT_MATCH_COEFFICIENT = 5;
 			const int COMPONENT_MATCH_EXPONENT    = 7;
 			const int COMPONENT_MATCH_CONSTANT    = 3;
-			const std::regex SEQUENCE_ELEMENT("(^|,)(-?[0-9]+)(,|$)");
+			const std::regex SEQUENCE_ELEMENT("(?=(^|,)(-?[0-9]+)(,|$))");
 			const int ELEMENT_MATCH = 2;
 		}
 		namespace Error {
