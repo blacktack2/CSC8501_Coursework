@@ -191,23 +191,23 @@ private:
 			{
 				[this]() { return "What do you want to call the file?\n"; },
 				[this](std::string input) {
-			if (mFileHandler.expressionFileExists(input)) {
-				std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
-				std::string action = requestUserInput();
-				if (action == "a") {
-					if (mFileHandler.appendExpressions(input, mCurrentPolynomials))
-						return std::make_pair(1, "Successfully appended polynomial to '" + input + "'\n");
-				} else if (action == "o") {
-					if (mFileHandler.writeExpressions(input, mCurrentPolynomials))
+					if (mFileHandler.expressionFileExists(input)) {
+						std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
+						std::string action = requestUserInput();
+						if (action == "a") {
+							if (mFileHandler.appendExpressions(input, mCurrentPolynomials))
+								return std::make_pair(1, "Successfully appended polynomial to '" + input + "'\n");
+						} else if (action == "o") {
+							if (mFileHandler.writeExpressions(input, mCurrentPolynomials))
+								return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
+						} else {
+							return std::make_pair(0, std::string(""));
+						}
+					} else if (mFileHandler.writeExpressions(input, mCurrentPolynomials)) {
 						return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
-				} else {
-					return std::make_pair(0, std::string(""));
+					}
+					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 				}
-			} else if (mFileHandler.writeExpressions(input, mCurrentPolynomials)) {
-				return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
-			}
-			return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
-	}
 			}
 		}
 	};
