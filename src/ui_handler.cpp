@@ -14,7 +14,7 @@ std::string UIHandler::ActionData::getPrompt() const {
 }
 
 UIHandler::UIHandler() :
-mMenuStack(), mCurrentPolynomial(), mCurrentSequence(), mFileHandler() {
+mMenuStack(), mCurrentPolynomials(), mCurrentSequences(), mFileHandler() {
 	mMenuStack.push({ROOT_MENU});
 }
 

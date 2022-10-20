@@ -1,5 +1,6 @@
 #pragma once
 
+#include <format>
 #include <functional>
 #include <iostream>
 #include <numeric>
@@ -66,25 +67,17 @@ private:
 	
 	const MenuContent ROOT_MENU = {
 		[this]() {
-			std::string prompt = mCurrentPolynomial.isLoaded() ? "Currently loaded polynomial: (" + mCurrentPolynomial.toString() + ")\n" : "No polynomial loaded...\n";
-			if (mCurrentSequence.size() == 0) {
-				prompt += "No sequence loaded...\n";
-			} else {
-				prompt += "Currently loaded sequence: [";
-				for (const auto& y : mCurrentSequence)
-					prompt += " " + std::to_string(y);
-				prompt += " ]\n";
-			}
+			std::string prompt = "Polynomials:\n";
+			for (int i = 0; i < mCurrentPolynomials.size(); i++)
+				prompt += "[" + std::vformat("{:" + std::to_string((int) std::log10(std::max(1, (int) mCurrentPolynomials.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentPolynomials[i].toString() + ")\n";
+			prompt += "Sequences:\n";
+			for (int i = 0; i < mCurrentSequences.size(); i++)
+				prompt += "[" + std::vformat("{:" + std::to_string((int) std::log10(std::max(1, (int) mCurrentSequences.size() - 1)) + 1) + "}", std::make_format_args(i)) + "](" + mCurrentSequences[i].toString() + ")\n";
 			return prompt;
-		} ,
+		},
 		{
-			{"create", [this]() { mMenuStack.push({CREATE_MENU}); }, "Create a new polynomial"},
-			{"generate", [this]() {
-				if (!mCurrentPolynomial.isLoaded())
-					std::cout << "Must load or create a polynomial in order to generate a sequence\n";
-				else
-					mMenuStack.push({GENERATE_MENU});
-			}, "Generate polynomial from the currently loaded sequence"},
+			{"newpoly", [this]() { mMenuStack.push({CREATE_POLYNOMIAL_MENU}); }, "Create a new polynomial"},
+			{"newseq", [this]() { mMenuStack.push({CREATE_SEQUENCE_MENU}); }, "Create a new sequence"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -103,7 +96,7 @@ private:
 
 		}
 	};
-	const MenuContent CREATE_MENU = {
+	const MenuContent CREATE_POLYNOMIAL_MENU = {
 		[this]() { return "Creating new polynomial...\n";  },
 		{
 			{"back", [this]() { softPopMenu(); }, ""},
@@ -112,19 +105,21 @@ private:
 			{
 				[this]() { return "Type your expression in the format:\nAx^4 + Bx^3 + Cx^2 + Dx + E\n"; },
 				[this](std::string input) {
-					mCurrentPolynomial.clear();
-					mCurrentPolynomial.parseFrom(input);
-					if (mCurrentPolynomial.getErrorState() == Algebra::Regex::Error::State::NoError)
+					Algebra::Polynomial& newPolynomial = mCurrentPolynomials.emplace_back();
+					if (newPolynomial.parseFrom(input)) {
 						return std::make_pair(1, std::string("Polynomial created successfuly\n"));
-					else
-						return std::make_pair(0, "[Error] " + Algebra::Regex::Error::ERROR_MESSAGES.find(mCurrentPolynomial.getErrorState())->second + "\n");
+					} else {
+						std::string error = "[Error] " + newPolynomial.getError() + "\n";
+						mCurrentPolynomials.pop_back();
+						return std::make_pair(0, error);
+					}
 				}
 			}
 		}
 	};
 	int sequenceStart, sequenceEnd;
-	const MenuContent GENERATE_MENU = {
-		[this]() { return "Generating new sequence...\n";  },
+	const MenuContent CREATE_SEQUENCE_MENU = {
+		[this]() { return "Creating new sequence...\n";  },
 		{
 			{"back", [this]() { softPopMenu(); }, ""},
 		},
@@ -157,10 +152,8 @@ private:
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
 						int sequenceStep = parsedInput.value();
-						Algebra::set_t sequence;
-						for (int i = sequenceStart; i <= sequenceEnd; i += sequenceStep)
-							sequence.push_back(i);
-						mCurrentSequence = mCurrentPolynomial.apply(sequence);
+						Algebra::Sequence& newSequence = mCurrentSequences.emplace_back();
+						newSequence.generateFrom(sequenceStart, sequenceEnd, sequenceStep);
 						return std::make_pair(1, std::string());
 					}
 					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
@@ -192,15 +185,15 @@ private:
 				std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
 				std::string action = requestUserInput();
 				if (action == "a") {
-					if (mFileHandler.appendExpression(input, mCurrentPolynomial))
+					if (mFileHandler.appendExpressions(input, mCurrentPolynomials))
 						return std::make_pair(1, "Successfully appended polynomial to '" + input + "'\n");
 				} else if (action == "o") {
-					if (mFileHandler.writeExpressions(input, std::vector<Algebra::Polynomial>{mCurrentPolynomial}))
+					if (mFileHandler.writeExpressions(input, mCurrentPolynomials))
 						return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
 				} else {
 					return std::make_pair(0, std::string(""));
 				}
-			} else if (mFileHandler.writeExpressions(input, std::vector<Algebra::Polynomial>{mCurrentPolynomial})) {
+			} else if (mFileHandler.writeExpressions(input, mCurrentPolynomials)) {
 				return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
 			}
 			return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
@@ -221,15 +214,15 @@ private:
 						std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
 						std::string action = requestUserInput();
 						if (action == "a") {
-							if (mFileHandler.appendSet(input, mCurrentSequence))
+							if (mFileHandler.appendSequences(input, mCurrentSequences))
 								return std::make_pair(1, "Successfully appended sequence to '" + input + "'\n");
 						} else if (action == "o") {
-							if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence}))
+							if (mFileHandler.writeSequences(input, mCurrentSequences))
 								return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
 						} else {
 							return std::make_pair(0, std::string(""));
 						}
-					} else if (mFileHandler.writeSets(input, std::vector<Algebra::set_t>{mCurrentSequence})) {
+					} else if (mFileHandler.writeSequences(input, mCurrentSequences)) {
 						return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
 					}
 					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
@@ -258,8 +251,8 @@ private:
 	std::stack<MenuStackData> mMenuStack;
 
 	bool mIsRunning = false;
-	Algebra::Polynomial mCurrentPolynomial;
-	Algebra::set_t mCurrentSequence;
+	std::vector<Algebra::Polynomial> mCurrentPolynomials;
+	std::vector<Algebra::Sequence> mCurrentSequences;
 
 	FileHandler mFileHandler;
 };

@@ -10,7 +10,7 @@ FileHandler::FileHandler() {
 
 }
 
-bool FileHandler::readSets(std::string filename, std::vector<Algebra::set_t>& sets) {
+bool FileHandler::readSequences(std::string filename, std::vector<Algebra::Sequence>& sequences) {
 	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ifstream file;
 	file.open(SEQUENCE_PATH(filename));
@@ -18,26 +18,26 @@ bool FileHandler::readSets(std::string filename, std::vector<Algebra::set_t>& se
 		mCurrentErrorState = FileNotFound;
 		return false;
 	}
-	readSets(file, sets);
+	readSequences(file, sequences);
 	file.close();
 	mCurrentErrorState = NoError;
 	return true;
 }
 
-bool FileHandler::writeSets(std::string filename, const std::vector<Algebra::set_t> sets) {
+bool FileHandler::writeSequences(std::string filename, const std::vector<Algebra::Sequence> sequences) {
 	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(SEQUENCE_PATH(filename));
-	writeSets(file, sets);
+	writeSequences(file, sequences);
 	file.close();
 	return true;
 }
 
-bool FileHandler::appendSet(std::string filename, const Algebra::set_t set) {
+bool FileHandler::appendSequences(std::string filename, const std::vector<Algebra::Sequence> sequence) {
 	if (!checkDirectory(SEQUENCE_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(SEQUENCE_PATH(filename), std::ios::app);
-	appendSet(file, set);
+	writeSequences(file, sequence);
 	file.close();
 	return true;
 }
@@ -65,11 +65,11 @@ bool FileHandler::writeExpressions(std::string filename, const std::vector<Algeb
 	return true;
 }
 
-bool FileHandler::appendExpression(std::string filename, const Algebra::Polynomial expressions) {
+bool FileHandler::appendExpressions(std::string filename, const std::vector<Algebra::Polynomial> expressions) {
 	if (!checkDirectory(EXPRESSION_DIRECTORY)) return false;
 	std::ofstream file;
 	file.open(EXPRESSION_PATH(filename), std::ios::app);
-	appendExpression(file, expressions);
+	writeExpressions(file, expressions);
 	file.close();
 	return true;
 }
@@ -110,25 +110,19 @@ std::string FileHandler::getError() {
 	return ERROR_MESSAGES.find(mCurrentErrorState)->second;
 }
 
-bool FileHandler::readSets(std::ifstream& stream, std::vector<Algebra::set_t>& sets) {
-
+bool FileHandler::readSequences(std::ifstream& stream, std::vector<Algebra::Sequence>& sequences) {
 	return true;
 }
 
-bool FileHandler::writeSets(std::ofstream& stream, const std::vector<Algebra::set_t> sets) {
+bool FileHandler::writeSequences(std::ofstream& stream, const std::vector<Algebra::Sequence> sequences) {
 	std::vector<std::string> setLines;
-	for (auto& set : sets)
-		setLines.push_back(Algebra::setToString(set));
+	for (auto& set : sequences)
+		setLines.push_back(set.toString());
 	std::ostringstream oss;
 	if (!setLines.empty()) {
 		std::copy(setLines.begin(), setLines.end(), std::ostream_iterator<std::string>(oss, SEQUENCE_DELIMITER.c_str()));
 	}
 	stream << oss.str();
-	return true;
-}
-
-bool FileHandler::appendSet(std::ofstream& stream, const Algebra::set_t set) {
-	stream << Algebra::setToString(set) << SEQUENCE_DELIMITER;
 	return true;
 }
 
@@ -139,11 +133,6 @@ bool FileHandler::readExpressions(std::ifstream& stream, std::vector<Algebra::Po
 bool FileHandler::writeExpressions(std::ofstream& stream, const std::vector<Algebra::Polynomial> expressions) {
 	for (const auto& expression : expressions)
 		stream << expression.toString() << EXPRESSION_DELIMITER;
-	return true;
-}
-
-bool FileHandler::appendExpression(std::ofstream& stream, const Algebra::Polynomial expression) {
-	stream << expression.toString() << EXPRESSION_DELIMITER;
 	return true;
 }
 
