@@ -1,6 +1,7 @@
 #include "polynomial.h"
 
 #include <numeric>
+#include <ranges>
 #include <sstream>
 
 namespace Algebra {
@@ -194,9 +195,10 @@ namespace Algebra {
 	bool Polynomial::doCoefficientsExeedMax(std::string expression) {
 		int coeffs[Limits::MAX_EXPONENT + 1]{};
 		calculateCoefficients(expression, coeffs);
-		for (const auto& c : coeffs)
-			if (c > Limits::MAX_COEFFICIENT || c < -Limits::MAX_COEFFICIENT) return true;
-		return false;
+		for (const auto& c : coeffs | std::views::drop(1))
+			if (c > Limits::MAX_COEFFICIENT || c < -Limits::MAX_COEFFICIENT)
+				return true;
+		return coeffs[0] > Limits::MAX_CONSTANT;
 	}
 
 	Polynomial::ParseErrorState Polynomial::findExpressionError(std::string expression) const {
