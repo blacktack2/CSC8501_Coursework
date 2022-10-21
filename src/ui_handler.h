@@ -96,6 +96,17 @@ private:
 				else
 					pushToMenuStack(APPLY_MENU);
 			}, "Apply a polynomial to one or all loaded sequences"},
+			{"derive", [this]() {
+				if (mCurrentSequences.empty()) {
+					std::cout << "Must load one or more sequences to derive from\n";
+				} else {
+					mCurrentPolynomials.clear();
+					int successes = 0;
+					for (auto& sequence : mCurrentSequences)
+						successes += mCurrentPolynomials.emplace_back().deriveFrom(sequence);
+					std::cout << "Successfully derived " << successes << "/" << mCurrentSequences.size() << " sequences\n";
+				}
+			}, "Derive polynomials from the currently loaded sequences"},
 			{"list", [this]() {
 				std::vector<std::string> polynomials;
 				std::vector<std::string> sequences;
@@ -282,7 +293,7 @@ private:
 				[this](std::string input) {
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
-						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentSequences.size())
+						if (parsedInput.value() < 0 || parsedInput.value() >= mCurrentSequences.size())
 							return std::make_pair(0, "[Error] Value out of range\n");
 						int& polyIndex = std::any_cast<int&>(getCurrentMenuData("polynomial"));
 						mCurrentPolynomials[polyIndex].apply(mCurrentSequences[parsedInput.value()]);

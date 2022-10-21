@@ -32,26 +32,46 @@ namespace Algebra {
 		const int MAX_EXPONENT = 4;
 	}
 
+	struct Matrixf {
+		Matrixf(int n_);
+
+		int n;
+		std::vector<std::vector<float>> matrix;
+	};
+
+	struct Matrix {
+		Matrix(int n_);
+
+		Matrixf getInverse();
+
+		//int getDeterminant();
+		//int getAtInversePos(int row, int col);
+		
+		int n;
+		std::vector<std::vector<int>> matrix;
+	};
+
 	class Sequence {
 	public:
 		Sequence();
+		explicit Sequence(std::vector<int> elements_);
 		Sequence(Sequence& other);
 		Sequence& operator=(Sequence& other);
 		Sequence(Sequence&& other);
 		Sequence& operator=(Sequence&& other);
 
-		std::vector<int>::iterator begin();
-		std::vector<int>::const_iterator begin() const;
-		std::vector<int>::iterator end();
-		std::vector<int>::const_iterator end() const;
-
 		void clear();
 		void generateFrom(int start, int end, int step);
 		bool parseFrom(std::string seqExpression);
+
+		Sequence differentiate() const;
+		int getDegree() const;
 		std::string toString() const;
 
 		std::string getError();
 		bool isLoaded() const;
+
+		std::vector<int> elements;
 	private:
 		enum ParseErrorState {
 			NoError,
@@ -62,7 +82,6 @@ namespace Algebra {
 
 		void parseString(std::string seqExpression, std::vector<int>& elements) const;
 
-		std::vector<int> mElements;
 		bool mIsLoaded = false;
 
 		ParseErrorState mCurrentErrorState = NoError;
@@ -93,6 +112,7 @@ namespace Algebra {
 
 		void clear();
 		bool parseFrom(std::string expression);
+		bool deriveFrom(Sequence& sequence);
 		std::string toString() const;
 
 		std::string getError() const;

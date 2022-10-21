@@ -1,8 +1,7 @@
 ﻿cmake_minimum_required (VERSION 3.8)
 project (CSC8501_Coursework)
 
-file(COPY resources DESTINATION ${CMAKE_BINARY_DIR}
-	PATTERN "*.gitkeep" EXCLUDE)
+file(COPY resources DESTINATION ${CMAKE_BINARY_DIR} PATTERN "*.gitkeep" EXCLUDE)
 
 file(GLOB_RECURSE SRC CONFIGURE_DEPENDS "src/*.cpp")
 file(GLOB_RECURSE HEAD CONFIGURE_DEPENDS "src/*.h")

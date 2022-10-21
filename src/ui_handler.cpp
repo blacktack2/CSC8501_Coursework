@@ -80,9 +80,10 @@ void UIHandler::handlePrompt() {
 }
 
 void UIHandler::parseInput(std::string input) {
-	MenuStackData menuData = mMenuStack.top();
+	MenuStackData& menuData = mMenuStack.top();
 	for (const auto& actionData : menuData.content.actionMap) {
 		if (actionData.getIdentifier() == input) {
+			menuData.justEntered = true;
 			actionData.action();
 			return;
 		}
