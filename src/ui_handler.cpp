@@ -40,7 +40,7 @@ void UIHandler::hangUntilEnterPressed(bool isProgramExit) {
 std::string UIHandler::requestUserInput() {
 	std::string input;
 	std::cout << USER_INPUT_PROMPT;
-	std::cin >> input;
+	std::getline(std::cin, input, '\n');
 	return input;
 }
 
