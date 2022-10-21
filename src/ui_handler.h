@@ -158,6 +158,18 @@ private:
 		},
 		{
 			{
+				[this]() { return "How many sequences will you create?\n"; },
+				[this](std::string input) {
+					std::optional<int> parsedInput = castUserInputInt(input);
+					if (parsedInput.has_value()) {
+						int& count = std::any_cast<int&>(getCurrentMenuData("count"));
+						count = std::max(1, parsedInput.value());
+						return std::make_pair(1, std::string());
+					}
+					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
+				}
+			},
+			{
 				[this]() { return "Sequence start:\n"; },
 				[this](std::string input) {
 					std::optional<int> parsedInput = castUserInputInt(input);
@@ -186,11 +198,14 @@ private:
 				[this](std::string input) {
 					std::optional<int> parsedInput = castUserInputInt(input);
 					if (parsedInput.has_value()) {
-						int sequenceStep = parsedInput.value();
-						Algebra::Sequence& newSequence = mCurrentSequences.emplace_back();
+						int sequenceStep = std::max(1, parsedInput.value());
+						int& count = std::any_cast<int&>(getCurrentMenuData("count"));
 						int& sequenceStart = std::any_cast<int&>(getCurrentMenuData("sequenceStart"));
 						int& sequenceEnd = std::any_cast<int&>(getCurrentMenuData("sequenceEnd"));
-						newSequence.generateFrom(sequenceStart, sequenceEnd, sequenceStep);
+						for (int i = 0; i < count; i++) {
+							Algebra::Sequence& newSequence = mCurrentSequences.emplace_back();
+							newSequence.generateFrom(sequenceStart, sequenceEnd, sequenceStep);
+						}
 						return std::make_pair(1, std::string());
 					}
 					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
@@ -198,6 +213,7 @@ private:
 			},
 		},
 		{
+			{"count", 1},
 			{"sequenceStart", 0},
 			{"sequenceEnd", 0},
 		}
