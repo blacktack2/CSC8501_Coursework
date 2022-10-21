@@ -126,12 +126,15 @@ namespace Algebra {
 
 		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]);
 
-		std::vector<int> deriveEquations(const int degree, Sequence& sequence);
+		std::vector<int> deriveEquations(const int degree, Sequence& sequence, int offset, int step);
 
 		int mCoefficients[Limits::MAX_EXPONENT + 1];
 		bool mIsLoaded = false;
 
 		ParseErrorState mCurrentErrorState = NoError;
+
+		const int MAX_DERIVATION_OFFSET = 500;
+		const int MAX_DERIVATION_STEP = 20;
 
 		const std::map<ParseErrorState, std::string> ERROR_MESSAGES = {
 			{NoError, ""},

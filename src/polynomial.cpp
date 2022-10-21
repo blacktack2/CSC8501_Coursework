@@ -226,14 +226,16 @@ namespace Algebra {
 	}
 
 	bool Polynomial::deriveFrom(Sequence& sequence) {
-		if (sequence.elements.size() <= 2)
-			return false;
+		if (sequence.elements.size() <= 2) return false;
 		int degree = sequence.getDegree();
-		if (degree > Limits::MAX_EXPONENT)
-			return false;
-		std::vector<int> coeffs = deriveEquations(degree, sequence);
-		std::copy(coeffs.begin(), coeffs.end(), mCoefficients);
-		return mIsLoaded = !doCoefficientsExeedMax(mCoefficients);
+		if (degree > Limits::MAX_EXPONENT) return false;
+		int offset = 0, step = 1;
+		do {
+			std::vector<int> coeffs = deriveEquations(degree, sequence, offset, step);
+			std::copy(coeffs.begin(), coeffs.end(), mCoefficients);
+			if (!doCoefficientsExeedMax(mCoefficients)) return mIsLoaded = true;
+		} while ((step += (offset = (offset == MAX_DERIVATION_OFFSET ? -MAX_DERIVATION_OFFSET : offset + 1)) == 0 ? 1 : 0) != MAX_DERIVATION_STEP);
+		return false;
 	}
 
 	std::string Polynomial::toString() const {
@@ -304,12 +306,12 @@ namespace Algebra {
 		}
 	}
 
-	std::vector<int> Polynomial::deriveEquations(const int degree, Sequence& sequence) {
+	std::vector<int> Polynomial::deriveEquations(const int degree, Sequence& sequence, int offset, int step) {
 		Matrix simultaniousLHS(degree + 1);
-		std::vector<float> simultaniousRHS(sequence.elements.begin() + 1, sequence.elements.begin() + degree + 2);
+		std::vector<float> simultaniousRHS(sequence.elements.begin(), sequence.elements.begin() + degree + 1);
 		for (int i = 0; i < degree + 1; i++)
 			for (int exp = 0; exp < degree + 1; exp++)
-				simultaniousLHS.matrix[i][exp] = std::pow(i + 1, exp);
+				simultaniousLHS.matrix[i][exp] = std::pow(i + offset, exp);
 		Matrix inverse = simultaniousLHS.getInverse();
 		std::vector<float> coeffs = inverse * simultaniousRHS;
 		return std::accumulate(coeffs.begin(), coeffs.end(), std::vector<int>(), [](std::vector<int> vec, float n) { vec.push_back((int)std::round(n)); return vec; });
