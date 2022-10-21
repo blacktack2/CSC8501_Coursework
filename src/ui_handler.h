@@ -101,10 +101,11 @@ private:
 					std::cout << "Must load one or more sequences to derive from\n";
 				} else {
 					mCurrentPolynomials.clear();
-					int successes = 0;
-					for (auto& sequence : mCurrentSequences)
-						successes += mCurrentPolynomials.emplace_back().deriveFrom(sequence);
-					std::cout << "Successfully derived " << successes << "/" << mCurrentSequences.size() << " sequences\n";
+					for (auto& sequence : mCurrentSequences) {
+						if (!mCurrentPolynomials.emplace_back().deriveFrom(sequence))
+							mCurrentPolynomials.pop_back();
+					}
+					std::cout << "Successfully derived " << mCurrentPolynomials.size() << "/" << mCurrentSequences.size() << " sequences\n";
 				}
 			}, "Derive polynomials from the currently loaded sequences"},
 			{"list", [this]() {
@@ -160,8 +161,7 @@ private:
 			{
 				[this]() { return "How many sequences will you create?\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						int& count = std::any_cast<int&>(getCurrentMenuData("count"));
 						count = std::max(1, parsedInput.value());
 						return std::make_pair(1, std::string());
@@ -172,8 +172,7 @@ private:
 			{
 				[this]() { return "Sequence start:\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						int& sequenceStart = std::any_cast<int&>(getCurrentMenuData("sequenceStart"));
 						sequenceStart = parsedInput.value();
 						return std::make_pair(1, std::string());
@@ -184,8 +183,7 @@ private:
 			{
 				[this]() { return "Sequence end:\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						int& sequenceEnd = std::any_cast<int&>(getCurrentMenuData("sequenceEnd"));
 						sequenceEnd = parsedInput.value();
 						return std::make_pair(1, std::string());
@@ -196,16 +194,13 @@ private:
 			{
 				[this]() { return "Sequence step:\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						int sequenceStep = std::max(1, parsedInput.value());
 						int& count = std::any_cast<int&>(getCurrentMenuData("count"));
 						int& sequenceStart = std::any_cast<int&>(getCurrentMenuData("sequenceStart"));
 						int& sequenceEnd = std::any_cast<int&>(getCurrentMenuData("sequenceEnd"));
-						for (int i = 0; i < count; i++) {
-							Algebra::Sequence& newSequence = mCurrentSequences.emplace_back();
-							newSequence.generateFrom(sequenceStart, sequenceEnd, sequenceStep);
-						}
+						for (int i = 0; i < count; i++)
+							mCurrentSequences.emplace_back().generateFrom(sequenceStart, sequenceEnd, sequenceStep);
 						return std::make_pair(1, std::string());
 					}
 					return std::make_pair(0, std::string("[Error] Expected an integer\n"));
@@ -235,8 +230,7 @@ private:
 			{
 				[this]() { return "Type the index of the polynomial you wish to delete\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						if (parsedInput < 0 || parsedInput >= mCurrentPolynomials.size())
 							return std::make_pair(0, "[Error] Value out of range\n");
 						mCurrentPolynomials.erase(mCurrentPolynomials.begin() + parsedInput.value());
@@ -256,8 +250,7 @@ private:
 			{
 				[this]() { return "Type the index of the sequence you wish to delete\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						if (parsedInput < 0 || parsedInput >= mCurrentSequences.size())
 							return std::make_pair(0, "[Error] Value out of range\n");
 						mCurrentSequences.erase(mCurrentSequences.begin() + parsedInput.value());
@@ -293,9 +286,8 @@ private:
 			{
 				[this]() { return "Which polynomial will you use?\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
-						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentPolynomials.size())
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
+						if (parsedInput.value() < 0 || parsedInput.value() >= mCurrentPolynomials.size())
 							return std::make_pair(0, std::string("[Error] Value out of range\n"));
 						int& polyIndex = std::any_cast<int&>(getCurrentMenuData("polynomial"));
 						polyIndex = parsedInput.value();
@@ -307,8 +299,7 @@ private:
 			{
 				[this]() { return "Which sequence will you apply to?\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						if (parsedInput.value() < 0 || parsedInput.value() >= mCurrentSequences.size())
 							return std::make_pair(0, "[Error] Value out of range\n");
 						int& polyIndex = std::any_cast<int&>(getCurrentMenuData("polynomial"));
@@ -332,8 +323,7 @@ private:
 			{
 				[this]() { return "Which polynomial will you use?\n"; },
 				[this](std::string input) {
-					std::optional<int> parsedInput = castUserInputInt(input);
-					if (parsedInput.has_value()) {
+					if (std::optional<int> parsedInput = castUserInputInt(input); parsedInput.has_value()) {
 						if (parsedInput.value() < 0 || parsedInput.value() > mCurrentPolynomials.size())
 							return std::make_pair(0, std::string("[Error] Value out of range\n"));
 						for (auto& sequence : mCurrentSequences)
@@ -364,20 +354,14 @@ private:
 				[this](std::string input) {
 					if (mFileHandler.expressionFileExists(input)) {
 						std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
-						std::string action = requestUserInput();
-						if (action == "a") {
-							if (mFileHandler.appendExpressions(input, mCurrentPolynomials))
-								return std::make_pair(1, "Successfully appended polynomial to '" + input + "'\n");
-						} else if (action == "o") {
-							if (mFileHandler.writeExpressions(input, mCurrentPolynomials))
-								return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
-						} else {
+						if (std::string action = requestUserInput(); action != "a" && action != "o")
 							return std::make_pair(0, std::string(""));
-						}
+						else
+							return ((action == "a") ? mFileHandler.appendExpressions(input, mCurrentPolynomials) : mFileHandler.writeExpressions(input, mCurrentPolynomials)) ?
+								std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n") : std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 					} else if (mFileHandler.writeExpressions(input, mCurrentPolynomials)) {
 						return std::make_pair(1, "Successfully saved polynomial to '" + input + "'\n");
 					}
-					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 				}
 			}
 		}
@@ -393,20 +377,14 @@ private:
 				[this](std::string input) {
 					if (mFileHandler.sequenceFileExists(input)) {
 						std::cout << "File already exists\n(a | append, o | overwrite, n | new name)\n";
-						std::string action = requestUserInput();
-						if (action == "a") {
-							if (mFileHandler.appendSequences(input, mCurrentSequences))
-								return std::make_pair(1, "Successfully appended sequence to '" + input + "'\n");
-						} else if (action == "o") {
-							if (mFileHandler.writeSequences(input, mCurrentSequences))
-								return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
-						} else {
+						if (std::string action = requestUserInput(); action != "a" && action != "o")
 							return std::make_pair(0, std::string(""));
-						}
+						else
+							return ((action == "a") ? mFileHandler.appendSequences(input, mCurrentSequences) : mFileHandler.writeSequences(input, mCurrentSequences)) ?
+							std::make_pair(1, "Successfully saved sequence to '" + input + "'\n") : std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 					} else if (mFileHandler.writeSequences(input, mCurrentSequences)) {
 						return std::make_pair(1, "Successfully saved sequence to '" + input + "'\n");
 					}
-					return std::make_pair(0, "[Error] " + mFileHandler.getError() + "\n");
 				}
 			}
 		}

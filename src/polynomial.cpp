@@ -7,66 +7,58 @@
 namespace Algebra {
 
 	// Matrix operations based on: https://www.geeksforgeeks.org/adjoint-inverse-matrix/
-	Matrix getCofactor(Matrix m, int p, int q) {
-		Matrix cofactor(m.n);
-		int i = 0, j = 0;
-		for (int row = 0; row < m.n; row++) {
-			for (int col = 0; col < m.n; col++) {
+	Matrix::Matrix(int n_) : n(n_), matrix(n, std::vector<float>(n, 0.0f)) {
+		
+	}
+
+	std::vector<float> Matrix::operator*(std::vector<float> vec) {
+		std::vector<float> out(vec.size(), 0);
+		for (int row = 0; row < n; row++)
+			for (int col = 0; col < n; col++)
+				out[row] += vec[col] * matrix[row][col];
+		return out;
+	}
+
+	int Matrix::getDeterminant() {
+		if (n == 1)
+			return matrix[0][0];
+		int det = 0;
+		int sign = -1;
+		for (int f = 0; f < n; f++)
+			det += (sign *= -1) * matrix[0][f] * getCofactor(0, f).getDeterminant();
+		return det;
+	}
+
+	Matrix Matrix::getCofactor(int p, int q) {
+		Matrix cofactor(n - 1);
+		for (int i = 0, j = 0, row = 0; row < n; row++, j = 0) {
+			for (int col = 0; col < n; col++) {
 				if (row != p && col != q) {
-					cofactor.matrix[i][j++] = m.matrix[row][col];
-					if (j == m.n - 1) {
-						j = 0;
-						i++;
-					}
+					cofactor.matrix[i][j++] = matrix[row][col];
+					i += ((j == n - 1) ? 0 : j) == 0;
 				}
 			}
 		}
 		return cofactor;
 	}
 
-	int getDeterminant(Matrix m, int n) {
-		int D = 0;
-		if (n == 1)
-			return m.matrix[0][0];
-		int sign = 1;
-		for (int f = 0; f < n; f++) {
-			Matrix cofactor = getCofactor(m, 0, f);
-			D += sign * m.matrix[0][f] * getDeterminant(cofactor, n - 1);
-			sign *= -1;
-		}
-
-		return D;
-	}
-
-	Matrix getAdjoint(Matrix m) {
-		Matrix adj(m.n);
-		if (m.n == 1) {
+	Matrix Matrix::getAdjoint() {
+		Matrix adj(n);
+		if (n == 1) {
 			adj.matrix[0][0] = 1;
 			return adj;
 		}
 		int sign = 1;
-		for (int i = 0; i < m.n; i++) {
-			for (int j = 0; j < m.n; j++) {
-				Matrix cofactor = getCofactor(m, i, j);
-				sign = ((i + j) % 2 == 0) ? 1 : -1;
-				adj.matrix[j][i] = (sign) * (getDeterminant(cofactor, m.n - 1));
-			}
-		}
+		for (int i = 0; i < n; i++)
+			for (int j = 0; j < n; j++)
+				adj.matrix[j][i] = (sign = ((i + j) % 2 == 0) ? 1 : -1) * (getCofactor(i, j).getDeterminant());
 		return adj;
 	}
 
-	Matrixf::Matrixf(int n_) : n(n_), matrix(n, std::vector<float>(n, 0.0f)) {
-
-	}
-
-	Matrix::Matrix(int n_) : n(n_), matrix(n, std::vector<int>(n, 0)) {
-		
-	}
-
-	Matrixf Matrix::getInverse() {
-		Matrix adjoint = getAdjoint(*this);
-		int det = getDeterminant(*this, n);
-		Matrixf inverse(n);
+	Matrix Matrix::getInverse() {
+		Matrix adjoint = getAdjoint();
+		int det = getDeterminant();
+		Matrix inverse(n);
 		for (int row = 0; row < n; row++)
 			for (int col = 0; col < n; col++)
 				inverse.matrix[row][col] = (float) adjoint.matrix[row][col] / det;
@@ -132,20 +124,13 @@ namespace Algebra {
 	}
 
 	int Sequence::getDegree() const {
-		Sequence s = Sequence(elements);
+		Sequence differential = Sequence(elements);
 		int degree = 0;
 		while (true) {
-			int v = s.elements.front();
-			bool same = true;
-			for (int i = 1; i < s.elements.size(); i++)
-				if (same &= (s.elements[i] == v))
-					break;
-			if (same)
+			if (std::adjacent_find(differential.elements.begin(), differential.elements.end(), std::not_equal_to<>() ) == differential.elements.end())
 				break;
-			if (degree++ > Limits::MAX_EXPONENT)
-				return INT_MAX;
-			s = s.differentiate();
-			if (s.elements.empty())
+			differential = differential.differentiate();
+			if (degree++ > Limits::MAX_EXPONENT || differential.elements.empty())
 				return INT_MAX;
 		}
 		return degree;
@@ -230,6 +215,7 @@ namespace Algebra {
 	}
 
 	bool Polynomial::parseFrom(std::string expression) {
+		expression.erase(remove(expression.begin(), expression.end(),' '), expression.end());
 		if (!isExpressionValid(expression)) {
 			mCurrentErrorState = findExpressionError(expression);
 			return mIsLoaded = false;
@@ -239,34 +225,15 @@ namespace Algebra {
 		return mIsLoaded = true;
 	}
 
-	std::vector<int> deriveEquations(const int degree, Sequence& sequence) {
-		Matrix simultaniousLHS(degree + 1);
-		std::vector<int> simultaniousRHS(degree + 1, 0);
-		for (int i = 0; i < degree + 1; i++) {
-			simultaniousRHS[i] = sequence.elements[i + 1];
-			for (int exp = 0; exp < degree + 1; exp++)
-				simultaniousLHS.matrix[i][exp] = std::pow(i + 1, exp);
-		}
-		std::vector<float> coeffs(degree + 1, 0);
-		Matrixf inverse = simultaniousLHS.getInverse();
-		for (int row = 0; row < degree + 1; row++)
-			for (int col = 0; col < degree + 1; col++)
-				coeffs[row] += simultaniousRHS[col] * inverse.matrix[row][col];
-		std::vector<int> intCoeffs(degree + 1, 0);
-		for (int i = 0; i < degree + 1; i++)
-			intCoeffs[i] = (int)std::round(coeffs[i]);
-		return intCoeffs;
-	}
-
 	bool Polynomial::deriveFrom(Sequence& sequence) {
+		if (sequence.elements.size() <= 2)
+			return false;
 		int degree = sequence.getDegree();
 		if (degree > Limits::MAX_EXPONENT)
 			return false;
 		std::vector<int> coeffs = deriveEquations(degree, sequence);
-		for (int i = 0; i < degree + 1; i++)
-			mCoefficients[i] = coeffs[i];
-		mIsLoaded = true;
-		return true;
+		std::copy(coeffs.begin(), coeffs.end(), mCoefficients);
+		return mIsLoaded = !doCoefficientsExeedMax(mCoefficients);
 	}
 
 	std::string Polynomial::toString() const {
@@ -305,13 +272,17 @@ namespace Algebra {
 		return !doCoefficientsExeedMax(expression);
 	}
 
-	bool Polynomial::doCoefficientsExeedMax(std::string expression) {
-		int coeffs[Limits::MAX_EXPONENT + 1]{};
-		calculateCoefficients(expression, coeffs);
+	bool Polynomial::doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]) {
 		for (const auto& c : coeffs | std::views::drop(1))
 			if (c > Limits::MAX_COEFFICIENT || c < -Limits::MAX_COEFFICIENT)
 				return true;
 		return coeffs[0] > Limits::MAX_CONSTANT;
+	}
+
+	bool Polynomial::doCoefficientsExeedMax(std::string expression) {
+		int coeffs[Limits::MAX_EXPONENT + 1]{};
+		calculateCoefficients(expression, coeffs);
+		return doCoefficientsExeedMax(coeffs);
 	}
 
 	Polynomial::ParseErrorState Polynomial::findExpressionError(std::string expression) const {
@@ -331,5 +302,16 @@ namespace Algebra {
 			std::string sign = m[Regex::Search::COMPONENT_MATCH_SIGN].str();
 			coeffs[(constValue == "") ? (exponent == "") ? 1 : stoi(exponent) : 0] += ((coefficient == "" && constValue == "") ? 1 : stoi(constValue == "" ? coefficient : constValue)) * (sign == "-" ? -1 : 1);
 		}
+	}
+
+	std::vector<int> Polynomial::deriveEquations(const int degree, Sequence& sequence) {
+		Matrix simultaniousLHS(degree + 1);
+		std::vector<float> simultaniousRHS(sequence.elements.begin() + 1, sequence.elements.begin() + degree + 2);
+		for (int i = 0; i < degree + 1; i++)
+			for (int exp = 0; exp < degree + 1; exp++)
+				simultaniousLHS.matrix[i][exp] = std::pow(i + 1, exp);
+		Matrix inverse = simultaniousLHS.getInverse();
+		std::vector<float> coeffs = inverse * simultaniousRHS;
+		return std::accumulate(coeffs.begin(), coeffs.end(), std::vector<int>(), [](std::vector<int> vec, float n) { vec.push_back((int)std::round(n)); return vec; });
 	}
 }

@@ -60,6 +60,8 @@ private:
 	const std::map<ErrorState, std::string> ERROR_MESSAGES = {
 		{NoError, ""},
 		{FileNotFound, "File not found"},
+		{MalformedExpression, "File contains malformed expression"},
+		{MalformedSequence, "File contains malformed sequence"},
 		{DirectoryMissing, "Missing resource directory"},
 	};
 };

@@ -32,23 +32,17 @@ namespace Algebra {
 		const int MAX_EXPONENT = 4;
 	}
 
-	struct Matrixf {
-		Matrixf(int n_);
-
-		int n;
-		std::vector<std::vector<float>> matrix;
-	};
-
 	struct Matrix {
 		Matrix(int n_);
+		std::vector<float> operator*(std::vector<float> vec);
 
-		Matrixf getInverse();
-
-		//int getDeterminant();
-		//int getAtInversePos(int row, int col);
+		int getDeterminant();
+		Matrix getCofactor(int p, int q);
+		Matrix getAdjoint();
+		Matrix getInverse();
 		
 		int n;
-		std::vector<std::vector<int>> matrix;
+		std::vector<std::vector<float>> matrix;
 	};
 
 	class Sequence {
@@ -126,10 +120,13 @@ namespace Algebra {
 			UnknownError
 		};
 		bool isExpressionValid(std::string expression);
+		bool doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]);
 		bool doCoefficientsExeedMax(std::string expression);
 		ParseErrorState findExpressionError(std::string expression) const;
 
 		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]);
+
+		std::vector<int> deriveEquations(const int degree, Sequence& sequence);
 
 		int mCoefficients[Limits::MAX_EXPONENT + 1];
 		bool mIsLoaded = false;

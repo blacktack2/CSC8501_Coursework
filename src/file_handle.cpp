@@ -18,10 +18,9 @@ bool FileHandler::readSequences(std::string filename, std::vector<Algebra::Seque
 		mCurrentErrorState = FileNotFound;
 		return false;
 	}
-	readSequences(file, sequences);
+	bool success = readSequences(file, sequences);
 	file.close();
-	mCurrentErrorState = NoError;
-	return true;
+	return success;
 }
 
 bool FileHandler::writeSequences(std::string filename, const std::vector<Algebra::Sequence> sequences) {
@@ -50,10 +49,9 @@ bool FileHandler::readExpressions(std::string filename, std::vector<Algebra::Pol
 		mCurrentErrorState = FileNotFound;
 		return false;
 	}
-	readExpressions(file, expressions);
+	bool success = readExpressions(file, expressions);
 	file.close();
-	mCurrentErrorState = NoError;
-	return true;
+	return success;
 }
 
 bool FileHandler::writeExpressions(std::string filename, const std::vector<Algebra::Polynomial> expressions) {
