@@ -38,9 +38,7 @@ private:
 		std::string mHelpPrompt;
 	};
 	typedef std::vector<ActionData> action_map_t;
-	// @return Prompt to be displayed before the list of actions
 	typedef std::function<std::string()> action_prompt_t;
-	// @param User input @return <amount to increment data action pointer (usually 1 or 0), prompt>
 	typedef std::function<std::pair<int, std::string>(std::string)> data_action_t;
 
 	struct DataActionSet {

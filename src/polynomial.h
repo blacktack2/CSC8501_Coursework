@@ -12,7 +12,7 @@ namespace Algebra {
 			const std::regex SEQUENCE("^(-?[0-9]+(,-?[0-9]+)+)?$");
 		}
 		namespace Search {
-			const std::regex POLYNOMIAL_COMPONENT("(?=(^|\\+|-)(([1-9]|[1-9][0-9]|[1-9][0-9][0-9]|1000)|(([1-9])?x(\\^([0-4]))?))($|\\+|-))");
+			const std::regex POLYNOMIAL_COMPONENT("(?=(^|\\+|-)(([0-9]+)|(([0-9]*)x(\\^([0-9]+))?))($|\\+|-))");
 			const int COMPONENT_MATCH_SIGN        = 1;
 			const int COMPONENT_MATCH_COEFFICIENT = 5;
 			const int COMPONENT_MATCH_EXPONENT    = 7;
@@ -21,8 +21,8 @@ namespace Algebra {
 			const int ELEMENT_MATCH = 2;
 		}
 		namespace Error {
-			const std::regex POLYNOMIAL_UNKNOWN_SYMBOL = std::regex("[^x1-9\\^+-]");
-			const std::regex SEQUENCE_UNKNOWN_SYMBOL = std::regex("[^1-9,-]");
+			const std::regex POLYNOMIAL_UNKNOWN_SYMBOL = std::regex("[^x0-9\\^+-]");
+			const std::regex SEQUENCE_UNKNOWN_SYMBOL = std::regex("[^0-9,-]");
 		}
 	}
 
@@ -69,6 +69,7 @@ namespace Algebra {
 	private:
 		enum ParseErrorState {
 			NoError,
+			UnknownSymbol,
 			UnknownError
 		};
 		bool isExpressionValid(std::string seqExpression);
@@ -83,6 +84,7 @@ namespace Algebra {
 		const std::regex UNKNOWN_SYMBOL = std::regex("[^x1-9\\^+-]");
 		const std::map<ParseErrorState, std::string> ERROR_MESSAGES = {
 			{NoError, ""},
+			{UnknownSymbol, "Unknown Symbol - One or more characters not recognized"},
 			{UnknownError, "Unknown Error"}
 		};
 
@@ -92,7 +94,7 @@ namespace Algebra {
 			error_check_t doCheck;
 		};
 		const std::vector<ErrorCheck> ERROR_CHECKS = {
-			
+			{UnknownSymbol, [this](std::string expression) { return std::regex_match(expression, Regex::Error::SEQUENCE_UNKNOWN_SYMBOL); }},
 		};
 	};
 
@@ -117,14 +119,16 @@ namespace Algebra {
 		enum ParseErrorState {
 			NoError,
 			UnknownSymbol,
+			CoefficientTooLarge,
+			ConstantTooLarge,
 			UnknownError
 		};
 		bool isExpressionValid(std::string expression);
-		bool doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]);
-		bool doCoefficientsExeedMax(std::string expression);
+		bool doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]) const;
+		bool doCoefficientsExeedMax(std::string expression) const;
 		ParseErrorState findExpressionError(std::string expression) const;
 
-		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]);
+		void calculateCoefficients(std::string expression, int (&coeffs)[Limits::MAX_EXPONENT + 1]) const;
 
 		std::vector<int> deriveEquations(const int degree, Sequence& sequence, int offset, int step);
 
@@ -139,6 +143,7 @@ namespace Algebra {
 		const std::map<ParseErrorState, std::string> ERROR_MESSAGES = {
 			{NoError, ""},
 			{UnknownSymbol, "Unknown Symbol - One or more characters not recognized"},
+			{CoefficientTooLarge, "Coefficient Too Large - One or more coefficients are larger than the maximum"},
 			{UnknownError, "Unknown Error"}
 		};
 
@@ -148,7 +153,8 @@ namespace Algebra {
 			error_check_t doCheck;
 		};
 		const std::vector<ErrorCheck> ERROR_CHECKS = {
-			{UnknownSymbol, [this](std::string expression) { return std::regex_match(expression, Regex::Error::POLYNOMIAL_UNKNOWN_SYMBOL); }}
+			{UnknownSymbol, [this](std::string expression) { return std::regex_match(expression, Regex::Error::POLYNOMIAL_UNKNOWN_SYMBOL); }},
+			{CoefficientTooLarge, [this](std::string expression) { return doCoefficientsExeedMax(expression); }},
 		};
 	};
 }

@@ -274,14 +274,14 @@ namespace Algebra {
 		return !doCoefficientsExeedMax(expression);
 	}
 
-	bool Polynomial::doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]) {
+	bool Polynomial::doCoefficientsExeedMax(const int (&coeffs)[Limits::MAX_EXPONENT + 1]) const {
 		for (const auto& c : coeffs | std::views::drop(1))
 			if (c > Limits::MAX_COEFFICIENT || c < -Limits::MAX_COEFFICIENT)
 				return true;
 		return coeffs[0] > Limits::MAX_CONSTANT;
 	}
 
-	bool Polynomial::doCoefficientsExeedMax(std::string expression) {
+	bool Polynomial::doCoefficientsExeedMax(std::string expression) const {
 		int coeffs[Limits::MAX_EXPONENT + 1]{};
 		calculateCoefficients(expression, coeffs);
 		return doCoefficientsExeedMax(coeffs);
@@ -294,7 +294,7 @@ namespace Algebra {
 		return UnknownError;
 	}
 
-	void Polynomial::calculateCoefficients(std::string expression, int(&coeffs)[Limits::MAX_EXPONENT + 1]) {
+	void Polynomial::calculateCoefficients(std::string expression, int(&coeffs)[Limits::MAX_EXPONENT + 1]) const {
 		std::fill_n(coeffs, Limits::MAX_EXPONENT + 1, 0);
 		for (std::sregex_iterator i(expression.begin(), expression.end(), Regex::Search::POLYNOMIAL_COMPONENT); i != std::sregex_iterator(); i++) {
 			std::smatch m = *i;
